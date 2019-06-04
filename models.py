@@ -1121,7 +1121,7 @@ class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
                                            False, 
                                            [self.params['beta'], 1 - self.params['beta']])
 
-        return np.random.choice(self.params['network'].neighbors(node), 1) if reveal_neighbor else None
+        return np.random.choice(self.params['network'].neighbors(node), 1)[0] if reveal_neighbor else None
 
     def probe(self):
         """
@@ -1144,8 +1144,9 @@ class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
                 candidate_node = candidate_nodes.pop()
 
                 next_candidate_node = self.query(candidate_node)
-                candidate_nodes.add(next_candidate_node)
-                predecessor_table[next_candidate_node] = candidate_node
+                if next_candidate_node is not None:
+                    candidate_nodes.add(next_candidate_node)
+                    predecessor_table[next_candidate_node] = candidate_node
 
                 in_new_component = True
                 for component in probed_subgraph:
