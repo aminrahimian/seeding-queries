@@ -228,7 +228,6 @@ def add_edges(G, number_of_edges_to_be_added=10, mode='random', seed=None):
     assert type(G) is NX.classes.graph.Graph, "input should be a NetworkX graph object"
 
     fat_network = copy.deepcopy(G)
-
     unformed_edges = list(NX.non_edges(fat_network))
 
     if len(unformed_edges) < number_of_edges_to_be_added:
@@ -941,41 +940,7 @@ class ContagionModel(object):
         pass
 
 
-class RandomSeeding(ContagionModel):
-
-    def __init__(self, params):
-        super(RandomSeeding, self).__init__(params)
-        self.classification_label = SIMPLE  # or COMPLEX
-        # set other model specific flags and handles here
-
-    def query(self):
-        """
-        queries the graph structure
-        """
-
-        assert self.network_initialized, "cannot query the network structure if it is not initialized"
-
-        assert not self.states_initialized, "states cannot be initialized before queries"
-
-        if 'k' in self.fixed_params:
-            self.params['k'] = self.fixed_params['k']
-        else:
-            self.params['k'] = 2
-            print('warning: k was not provided, set to 2')
-
-        k_random_node_indices = np.random.choice(range(self.params['size']),
-                                                 self.params['k'],
-                                                 replace=False)
-
-        return k_random_node_indices
-
-    def seed(self):
-        k_random_node_indices = self.query()
-        seed_set = k_random_node_indices
-        return seed_set
-
-
-class IndependentCascadeRandomSeeding(RandomSeeding):
+class IndependentCascade(ContagionModel):
     """
     Implements an independent cascade model. Each infected neighbor has an independent probability beta of passing on her
     infection, as long as her infection has occurred within the past mem = 1 time steps.
@@ -987,7 +952,7 @@ class IndependentCascadeRandomSeeding(RandomSeeding):
     """
 
     def __init__(self, params):
-        super(IndependentCascadeRandomSeeding, self).__init__(params)
+        super(IndependentCascade, self).__init__(params)
         self.classification_label = SIMPLE
 
         assert TRACK_TIME_SINCE_VARIABLES, "we need the time_since_variables for the IndependentCascade model"
@@ -999,12 +964,10 @@ class IndependentCascadeRandomSeeding(RandomSeeding):
         current_network = copy.deepcopy(self.params['network'])
 
         for i in current_network.nodes():
-
             # current_network.node[i]['state'] can either be susceptible (0)
             # or active infected (0.5) or inactive infected (-0.5)
 
             # transition from susceptible to active infected:
-
             if current_network.node[i]['state'] == susceptible:
                 assert self.params['network'].node[i]['time_since_infection'] == 0 and \
                        self.params['network'].node[i]['time_since_activation'] == 0, \
@@ -1019,7 +982,6 @@ class IndependentCascadeRandomSeeding(RandomSeeding):
                         if RD.random() < self.params['beta']:
 
                             self.params['network'].node[i]['state'] = infected * active
-
                             SOMETHING_HAPPENED = True
 
                             for k in self.params['network'].neighbors(i):
@@ -1031,7 +993,6 @@ class IndependentCascadeRandomSeeding(RandomSeeding):
                 # in all the below cases the node is in infected active or infected inactive state.
 
             # transition from active or inactive infected to susceptible:
-
             elif RD.random() < self.params['delta']:
                 assert 2 * abs(current_network.node[i]['state']) == infected, \
                     "error: node states are mishandled"
@@ -1107,10 +1068,12 @@ class IndependentCascadeRandomSeeding(RandomSeeding):
                 self.spread_stopped = True
 
 
-class NewSeeding(ContagionModel):
+class IndependentCascadeRandomSeeding(IndependentCascade):
 
     def __init__(self, params):
-        super(NewSeeding, self).__init__(params)
+        super(IndependentCascadeRandomSeeding, self).__init__(params)
+        self.classification_label = SIMPLE  # or COMPLEX
+        # set other model specific flags and handles here
 
     def query(self):
         """
@@ -1118,32 +1081,90 @@ class NewSeeding(ContagionModel):
         """
 
         assert self.network_initialized, "cannot query the network structure if it is not initialized"
-
         assert not self.states_initialized, "states cannot be initialized before queries"
 
-        pass
+        if 'k' in self.fixed_params:
+            self.params['k'] = self.fixed_params['k']
+        else:
+            self.params['k'] = 2
+            print('warning: k was not provided, set to 2')
+
+        k_random_node_indices = np.random.choice(range(self.params['size']),
+                                                 self.params['k'],
+                                                 replace=False)
+
+        return k_random_node_indices
+
+    def seed(self):
+        k_random_node_indices = self.query()
+        seed_set = k_random_node_indices
+        return seed_set
+
+
+class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
+
+    def __init__(self, params):
+        super(IndependentCasacadeEdgeQuerySeeding, self).__init__(params)
+
+        #To-Do: initiate probe parameters here, calculate them from epsilon
+
+    def query(self, node):
+        """
+        queries the graph structure
+        """
+
+        assert self.network_initialized, "cannot query the network structure if it is not initialized"
+        assert not self.states_initialized, "states cannot be initialized before queries"
+
+        reveal_neighbor = np.random.choice([True, False], 
+                                           1, 
+                                           False, 
+                                           [self.params['beta'], 1 - self.params['beta']])
+
+        return np.random.choice(self.params['network'].neighbors(node), 1) if reveal_neighbor else None
+
+    def probe(self):
+        """
+        probes the graph structure for edge query seeding
+        """
+        sample_size = int(self.params['size'] * self.params['rho'])
+        sampled_nodes = np.random.choice(range(self.params['size']),
+                                         sample_size,
+                                         replace = False)
+
+        probed_subgraphs = []
+
+        for i in range(self.params['T']):
+            probed_subgraph = []
+
+            candidate_nodes = set(sampled_nodes)
+            predecessor_table = {candidate_node : None for candidate_node in candidate_nodes}
+
+            while not candidate_nodes:
+                candidate_node = candidate_nodes.pop()
+
+                next_candidate_node = self.query(candidate_node)
+                candidate_nodes.add(next_candidate_node)
+                predecessor_table[next_candidate_node] = candidate_node
+
+                in_new_component = True
+                for component in probed_subgraph:
+                    if predecessor_table[candidate_node] in component:
+                        component.add(predecessor_table)
+                        in_new_component = False
+
+                if in_new_component:
+                    probed_subgraph.append({candidate_node})
+
+            probed_subgraphs.append(probed_subgraph)
+            del(candidate_nodes)
+            del(predecessor_table)
+
+        del(sampled_nodes)
+        return probed_subgraphs
 
     def seed(self):
         self.query()
         # compute the seed set
         seed_set = [] # initially_infected_node_indexes
         pass
-
-
-class NewSpreadModelNewSeeding(NewSeeding):
-
-    def __init__(self, params):
-        super(NewSeeding, self).__init__(params)
-
-    def step(self):
-
-        current_network = copy.deepcopy(self.params['network'])
-
-        for i in current_network.nodes():
-            # set node states according to the model
-            pass
-        # makes sure time_since_infection and number_of_infected_neighbors are properly updated
-        self.time_since_infection_is_updated = True
-        self.number_of_active_infected_neighbors_is_updated = True
-
-        del current_network
