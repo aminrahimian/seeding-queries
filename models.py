@@ -1,6 +1,7 @@
 from settings import *
 import gc
 import copy
+import itertools
 
 TRACK_TIME_SINCE_VARIABLES = True
 
@@ -1106,7 +1107,7 @@ class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
     def __init__(self, params):
         super(IndependentCasacadeEdgeQuerySeeding, self).__init__(params)
 
-        #To-Do: initiate probe parameters here, calculate them from epsilon
+        #Question: initiate probe parameters here, calculate them from epsilon?
 
     def query(self, node):
         """
@@ -1123,15 +1124,12 @@ class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
 
         return np.random.choice(self.params['network'].neighbors(node), 1)[0] if reveal_neighbor else None
 
-    def probe(self):
+    def probe(self, sampled_nodes):
         """
         probes the graph structure for edge query seeding
         """
-        sample_size = int(self.params['size'] * self.params['rho'])
-        sampled_nodes = np.random.choice(range(self.params['size']),
-                                         sample_size,
-                                         replace = False)
-
+        # probe parameters rho, T and tau are assumed to be provided on init
+        
         probed_subgraphs = []
 
         for i in range(self.params['T']):
@@ -1165,7 +1163,50 @@ class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
         return probed_subgraphs
 
     def seed(self):
-        self.query()
-        # compute the seed set
-        seed_set = [] # initially_infected_node_indexes
-        pass
+        sample_size = int(self.params['size'] * self.params['rho'])
+        sampled_nodes = np.random.choice(range(self.params['size']),
+                                         sample_size,
+                                         replace = False)
+        probed_subgraphs = self.probe(sampled_nodes)
+
+        all_components = list(itertools.chain.from_iterable(probed_subgraphs))
+        sampled_nodes_set = set(sampled_nodes)
+        component_scores = [len(component.intersection(sampled_nodes_set)) for component in all_components]
+
+        candidate_sample_size = int((self.params['size'] / self.params['k']) * np.log(1 / self.params['eps']))
+        search_set = set(range(self.params['size']))
+        seed_set = []
+
+        for i in range(self.params['k']):
+            candidate_sample = np.random.choice(list(search_set), 
+                                                size = candidate_sample_size,
+                                                replace = False)
+
+            next_seed = None
+            max_gain = 0
+            for candidate in candidate_sample:
+                candidate_score = 0
+                for i in range(len(all_components)):
+                    if candidate in all_components[i]:
+                        candidate_score += component_scores[i]
+
+                if candidate_score > max_gain:
+                    next_seed = candidate
+                    max_gain = candidate_score
+
+            seed_set.append(next_seed)
+            search_set.remove(next_seed)
+            for i in range(len(all_components)):
+                if next_seed in all_components[i]:
+                    component_scores[i] = 0
+
+        del(sample_size)
+        del(sampled_nodes)
+        del(probed_subgraphs)
+        del(all_components)
+        del(sampled_nodes_set)
+        del(component_scores)
+        del(candidate_sample_size)
+        del(search_set)
+
+        return seed_set
