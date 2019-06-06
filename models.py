@@ -1173,7 +1173,7 @@ class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
         sampled_nodes_set = set(sampled_nodes)
         component_scores = [len(component.intersection(sampled_nodes_set)) for component in all_components]
 
-        candidate_sample_size = int((self.params['size'] / self.params['k']) * np.log(1 / self.params['eps']))
+        candidate_sample_size = int((self.params['size'] / self.params['k']) * np.log(1 / self.params['eps_prime']))
         search_set = set(range(self.params['size']))
         seed_set = []
 
@@ -1210,3 +1210,9 @@ class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
         del(search_set)
 
         return seed_set
+
+
+class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
+
+    def __init__(self, params):
+        super(IndependentCascadeRandomSeeding, self).__init__(params)
