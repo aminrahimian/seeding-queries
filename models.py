@@ -1215,4 +1215,7 @@ class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
 class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
 
     def __init__(self, params):
-        super(IndependentCascadeRandomSeeding, self).__init__(params)
+        super(IndependentCascadeSpreadQuerySeeding, self).__init__(params)
+
+    def seed(self):
+        pass
