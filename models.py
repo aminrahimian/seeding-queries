@@ -1128,8 +1128,8 @@ class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
         """
         probes the graph structure for edge query seeding
         """
-        # probe parameters rho, T and tau are assumed to be provided on init
-        
+        # Assumption: probe parameters rho, T and tau are assumed to be provided on init
+
         probed_subgraphs = []
 
         for i in range(self.params['T']):
