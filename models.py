@@ -1224,9 +1224,6 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
 
     def spread(self, i):
         dummy_contagion_model = IndependentCascade(copy.deepcopy(self.params))
-        
-        dummy_contagion_model.missing_params_not_set = True
-        dummy_contagion_model.random_init()
 
         all_nodes_states = list(
             map(lambda node_pointer: 1.0 * self.params['network'].node[node_pointer]['state'],
