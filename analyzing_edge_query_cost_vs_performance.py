@@ -99,9 +99,9 @@ def analyze_cost_vs_performance(network_id):
 
     if save_computations:
         seeding_model_folder = "/edge_query/" if EDGE_QUERY_SEEDING else "/spread_query/"
-        data_dump_folder = spreading_pickled_samples_directory_address
-                                                 + 'k_' + str(k)
-                                                 + seeding_model_folder
+        data_dump_folder = (spreading_pickled_samples_directory_address
+                                                + 'k_' + str(k)
+                                                + seeding_model_folder)
         os.makedirs(os.path.dirname(data_dump_folder), exist_ok = True)
 
         pickle.dump(spread_size_samples, open(data_dump_folder
