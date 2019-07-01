@@ -601,7 +601,8 @@ class ContagionModel(object):
         # complex contagion computations by shortening the loop over exposed agents.
 
         self.params['initial_states'] = 1.0 * np.zeros(self.params['size'])
-        self.params['initial_states'][initially_infected_node_indexes] = infected * active
+        for node in initially_infected_node_indexes:
+            self.params['initial_states'][int(node)] = infected * active
         # all nodes are initially active by default
         self.params['initial_states'] = list(self.params['initial_states'])
 
@@ -661,7 +662,7 @@ class ContagionModel(object):
         self.updated_list_of_exposed_agents = []
         self.updated_list_of_most_recent_activations = []
 
-    def random_init(self):
+    def random_init(self, with_seed = True):
         """
         the parameters that are provided when the class is being initialized are treated as fixed. The missing parameters
         are set randomly. In an inference framework the distributions that determine the random draws are priors over
@@ -714,7 +715,10 @@ class ContagionModel(object):
 
         self.init_network()
 
-        seed_set = self.seed()
+        if with_seed:
+            seed_set, _ = self.seed()
+        else:
+            seed_set = []
 
         self.init_network_states(seed_set)
 
@@ -911,6 +915,50 @@ class ContagionModel(object):
         return avg_speed, speed_std, speed_max, speed_min, speed_samples, \
                avg_infection_size, infection_size_std, infection_size_max, infection_size_min, infection_size_samples
 
+    def get_cost_vs_performance(self, dataset_size=50, cap=0.99):
+        self.missing_params_not_set = True
+        self.random_init(with_seed = False)
+
+        total_numbers_of_infected = []
+        costs = []
+
+        for i in range(dataset_size):
+            time = 0
+
+            # record the seed set
+            seeds, cost = self.seed()
+            self.init_network_states(seeds)
+
+            if hasattr(self, 'isActivationModel'):
+                self.set_activation_functions()
+
+            # record the values at time zero:
+            dummy_network = self.params['network'].copy()
+
+            all_nodes_states = list(
+                map(lambda node_pointer: 1.0 * self.params['network'].node[node_pointer]['state'],
+                    self.params['network'].nodes()))
+            total_number_of_infected = 2 * np.sum(abs(np.asarray(all_nodes_states)))
+
+            while (total_number_of_infected < cap * self.params['size']) and (not self.spread_stopped):
+                self.outer_step()
+                dummy_network = self.params['network'].copy()
+                time += 1
+                all_nodes_states = list(
+                    map(lambda node_pointer: 1.0 * self.params['network'].node[node_pointer]['state'],
+                        self.params['network'].nodes()))
+                total_number_of_infected = 2 * np.sum(abs(np.asarray(all_nodes_states)))
+                if time > self.params['size'] * 10:
+                    time = float('Inf')
+                    print('It is taking too long (10x size) to spread totally.')
+                    break
+
+            del dummy_network
+            total_numbers_of_infected.append(total_number_of_infected)
+            costs.append(cost)
+
+        return (total_numbers_of_infected, costs)
+    
     def outer_step(self):
         assert hasattr(self, 'classification_label'), 'classification_label not set'
         assert not self.missing_params_not_set, 'missing params are not set'
@@ -1094,15 +1142,15 @@ class IndependentCascadeRandomSeeding(IndependentCascade):
                                                  self.params['k'],
                                                  replace=False)
 
-        return k_random_node_indices
+        return (k_random_node_indices, self.params['k'])
 
     def seed(self):
-        k_random_node_indices = self.query()
+        k_random_node_indices, query_cost = self.query()
         seed_set = k_random_node_indices
-        return seed_set
+        return (seed_set, query_cost)
 
 
-class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
+class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
 
     def __init__(self, params):
         super(IndependentCasacadeEdgeQuerySeeding, self).__init__(params)
@@ -1122,7 +1170,7 @@ class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
                                            False, 
                                            [self.params['beta'], 1 - self.params['beta']])
 
-        return np.random.choice(self.params['network'].neighbors(node), 1)[0] if reveal_neighbor else None
+        return np.random.choice(list(self.params['network'].neighbors(node)), 1)[0] if reveal_neighbor else None
 
     def probe(self, sampled_nodes):
         """
@@ -1131,6 +1179,7 @@ class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
         # Assumption: probe parameters rho, T and tau are assumed to be provided on init
 
         probed_subgraphs = []
+        queried_nodes = set()
 
         for i in range(self.params['T']):
             probed_subgraph = []
@@ -1138,10 +1187,12 @@ class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
             candidate_nodes = set(sampled_nodes)
             predecessor_table = {candidate_node : None for candidate_node in candidate_nodes}
 
-            while not candidate_nodes:
+            while len(candidate_nodes) != 0:
                 candidate_node = candidate_nodes.pop()
 
                 next_candidate_node = self.reveal_nbhr(candidate_node)
+                queried_nodes.add(candidate_node)
+
                 if next_candidate_node is not None:
                     candidate_nodes.add(next_candidate_node)
                     predecessor_table[next_candidate_node] = candidate_node
@@ -1149,7 +1200,7 @@ class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
                 in_new_component = True
                 for component in probed_subgraph:
                     if predecessor_table[candidate_node] in component:
-                        component.add(predecessor_table)
+                        component.add(candidate_node)
                         in_new_component = False
 
                 if in_new_component:
@@ -1159,15 +1210,17 @@ class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
             del(candidate_nodes)
             del(predecessor_table)
 
+        query_cost = len(queried_nodes)
         del(sampled_nodes)
-        return probed_subgraphs
+        del(queried_nodes)
+        return (probed_subgraphs, query_cost)
 
     def query(self):
         sample_size = int(self.params['size'] * self.params['rho'])
-        sampled_nodes = np.random.choice(range(self.params['size']),
+        sampled_nodes = np.random.choice(list(self.params['network'].nodes()),
                                          sample_size,
                                          replace = False)
-        probed_subgraphs = self.probe(sampled_nodes)
+        probed_subgraphs, query_cost = self.probe(sampled_nodes)
 
         all_components = list(itertools.chain.from_iterable(probed_subgraphs))
         sampled_nodes_set = set(sampled_nodes)
@@ -1177,13 +1230,13 @@ class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
         del(sampled_nodes)
         del(probed_subgraphs)
         del(sampled_nodes_set)
-        return (all_components, component_scores)
+        return (all_components, component_scores, query_cost)
     
     def seed(self):
-        all_components, component_scores = self.query()
+        all_components, component_scores, query_cost = self.query()
 
         candidate_sample_size = int((self.params['size'] / self.params['k']) * np.log(1 / self.params['eps_prime']))
-        search_set = set(range(self.params['size']))
+        search_set = set(self.params['network'].nodes())
         seed_set = []
 
         for i in range(self.params['k']):
@@ -1203,18 +1256,19 @@ class IndependentCasacadeEdgeQuerySeeding(IndependentCascade):
                     next_seed = candidate
                     max_gain = candidate_score
 
-            seed_set.append(next_seed)
-            search_set.remove(next_seed)
-            for i in range(len(all_components)):
-                if next_seed in all_components[i]:
-                    component_scores[i] = 0
+            if next_seed is not None:
+                seed_set.append(next_seed)
+                search_set.remove(next_seed)
+                for i in range(len(all_components)):
+                    if next_seed in all_components[i]:
+                        component_scores[i] = 0
 
         del(all_components)
         del(component_scores)
         del(candidate_sample_size)
         del(search_set)
 
-        return seed_set
+        return (seed_set, query_cost)
 
 
 class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
@@ -1225,18 +1279,27 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
     def spread(self, i):
         dummy_contagion_model = IndependentCascade(copy.deepcopy(self.params))
 
+        dummy_contagion_model.missing_params_not_set = True
+        dummy_contagion_model.random_init(with_seed = False)
+
+        dummy_contagion_model.init_network_states([i])
+
+        if hasattr(self, 'isActivationModel'):
+            dummy_contagion_model.set_activation_functions()
+
         all_nodes_states = list(
-            map(lambda node_pointer: 1.0 * self.params['network'].node[node_pointer]['state'],
-                self.params['network'].nodes()))
+            map(lambda node_pointer: 1.0 * dummy_contagion_model.params['network'].node[node_pointer]['state'],
+                dummy_contagion_model.params['network'].nodes()))
         total_number_of_infected = 2 * np.sum(abs(np.asarray(all_nodes_states)))
 
         # Note: the assumption here is that the tau paramter indicates the cap of maximum spread, similar to edge query model
-        while (total_number_of_infected < self.params['tau'] * self.params['size']) and (not self.spread_stopped):
-            self.outer_step()
+        while (total_number_of_infected < dummy_contagion_model.params['tau'] * dummy_contagion_model.params['size']) \
+            and (not dummy_contagion_model.spread_stopped):
+            dummy_contagion_model.outer_step()
 
             all_nodes_states = list(
-                map(lambda node_pointer: 1.0 * self.params['network'].node[node_pointer]['state'],
-                    self.params['network'].nodes()))
+                map(lambda node_pointer: 1.0 * dummy_contagion_model.params['network'].node[node_pointer]['state'],
+                    dummy_contagion_model.params['network'].nodes()))
             total_number_of_infected = 2 * np.sum(abs(np.asarray(all_nodes_states)))
 
         spread = set(filter(lambda j : dummy_contagion_model.params['network'].node[j]['state'] != 0,
@@ -1246,21 +1309,23 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
 
     def query(self):
         sampled_spreads = []
-        sampled_nodes = np.random.choice(self.params['size'],
-                                            size = self.params['rho'],
-                                            replace = False)
+        sampled_nodes = np.random.choice(range(self.params['size']),
+                                        size = int(self.params['rho']),
+                                        replace = False)
 
         for node in sampled_nodes:
             sampled_spreads.append(self.spread(node))
 
-        return sampled_spreads
+        return (sampled_spreads, sampled_nodes)
 
     def seed(self):
         candidates = set(range(self.params['size']))
         seeds = []
+        queried_nodes = set()
 
         for i in range(self.params['k']):
-            sampled_spreads = self.query()
+            sampled_spreads, sampled_nodes = self.query()
+            queried_nodes.update(set(sampled_nodes))
 
             for j in range(len(sampled_spreads)):
                 if sampled_spreads[j].intersection(set(seeds)):
@@ -1274,9 +1339,13 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
                     new_seed = candidate
                     max_score = candidate_score
 
-            seeds.append(new_seed)
-            candidates.remove(new_seed)
+            if new_seed is not None:
+                seeds.append(new_seed)
+                candidates.remove(new_seed)
             del(sampled_spreads)
+            del(sampled_nodes)
 
+        query_cost = len(queried_nodes)
+        del(queried_nodes)
         del(candidates)
-        return seeds
+        return (seeds, query_cost)

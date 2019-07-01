@@ -43,7 +43,8 @@ def natural_keys(text):
 
 
 # real world networks simulation settings:
-network_group = 'chami_union_edgelist_'
+network_group = 'banerjee_combined_edgelist_'
+#'chami_union_edgelist_'
 # 'chami_union_edgelist_'
 # 'fb100_edgelist_'
 # 'cai_edgelist_'
