@@ -1153,7 +1153,7 @@ class IndependentCascadeRandomSeeding(IndependentCascade):
 class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
 
     def __init__(self, params):
-        super(IndependentCasacadeEdgeQuerySeeding, self).__init__(params)
+        super(IndependentCascadeEdgeQuerySeeding, self).__init__(params)
 
         #Question: initiate probe parameters here, calculate them from epsilon?
 
