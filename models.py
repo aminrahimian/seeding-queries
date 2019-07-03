@@ -1309,9 +1309,9 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
 
     def query(self):
         sampled_spreads = []
-        sampled_nodes = np.random.choice(range(self.params['size']),
-                                        size = int(self.params['rho']),
-                                        replace = False)
+        sampled_nodes = np.random.choice(list(self.params['network'].nodes()),
+                                         size = int(self.params['rho']),
+                                         replace = False)
 
         for node in sampled_nodes:
             sampled_spreads.append(self.spread(node))
@@ -1319,7 +1319,7 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
         return (sampled_spreads, sampled_nodes)
 
     def seed(self):
-        candidates = set(range(self.params['size']))
+        candidates = set(list(self.params['network'].nodes()))
         seeds = []
         queried_nodes = set()
 
