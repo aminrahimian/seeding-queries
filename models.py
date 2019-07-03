@@ -602,7 +602,7 @@ class ContagionModel(object):
 
         self.params['initial_states'] = 1.0 * np.zeros(self.params['size'])
         for node in initially_infected_node_indexes:
-            self.params['initial_states'][int(node)] = infected * active
+            self.params['initial_states'][self.node_list.index(node)] = infected * active
         # all nodes are initially active by default
         self.params['initial_states'] = list(self.params['initial_states'])
 
