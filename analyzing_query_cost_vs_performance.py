@@ -11,7 +11,7 @@ VERBOSE = True
 
 CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
-EDGE_QUERY_SEEDING = True
+EDGE_QUERY_SEEDING = False
 
 size_of_dataset = 50
 
