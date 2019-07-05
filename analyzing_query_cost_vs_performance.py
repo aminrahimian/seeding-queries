@@ -53,11 +53,12 @@ def analyze_cost_vs_performance(network_id):
     
     if EDGE_QUERY_SEEDING:
         rho = (2 + eps) * (k * delta * np.log(network_size) + np.log(2)) / (2 * eps * eps * network_size)
+        tau = np.log(1 / eps) * network_size / (eps * k)
     else:
         rho = 0.2 * network_size
+        tau = 0.95
     
     T = int (3 * (delta + np.log(2)) * (k+1) * np.log(network_size) / (eps * eps))
-    tau = np.log(1 / eps) * network_size / (eps * k)
 
     params_original = {
         'network': G,
