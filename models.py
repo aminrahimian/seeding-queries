@@ -1292,15 +1292,20 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
                 dummy_contagion_model.params['network'].nodes()))
         total_number_of_infected = 2 * np.sum(abs(np.asarray(all_nodes_states)))
 
+        time = 0
         # Note: the assumption here is that the tau paramter indicates the cap of maximum spread, similar to edge query model
         while (total_number_of_infected < dummy_contagion_model.params['tau'] * dummy_contagion_model.params['size']) \
             and (not dummy_contagion_model.spread_stopped):
+            time += 1
             dummy_contagion_model.outer_step()
 
             all_nodes_states = list(
                 map(lambda node_pointer: 1.0 * dummy_contagion_model.params['network'].node[node_pointer]['state'],
                     dummy_contagion_model.params['network'].nodes()))
             total_number_of_infected = 2 * np.sum(abs(np.asarray(all_nodes_states)))
+            
+            if time > self.params['size'] * 10:
+                break 
 
         spread = set(filter(lambda j : dummy_contagion_model.params['network'].node[j]['state'] != 0,
                             dummy_contagion_model.params['network'].nodes()))
@@ -1312,7 +1317,7 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
         sampled_nodes = np.random.choice(list(self.params['network'].nodes()),
                                          size = int(self.params['rho']),
                                          replace = False)
-
+        
         for node in sampled_nodes:
             sampled_spreads.append(self.spread(node))
 
