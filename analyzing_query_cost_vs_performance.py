@@ -13,7 +13,7 @@ CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
 EDGE_QUERY_SEEDING = False
 
-size_of_dataset = 10
+size_of_dataset = 20
 
 CAP = 0.9
 
@@ -49,7 +49,7 @@ def analyze_cost_vs_performance(network_id):
 
     # Running seeding and spreading simulations
     spread_size_samples = []
-    query_cost_samples = [10*k*j for j in range(1, size_of_dataset + 1)]
+    query_cost_samples = [50*k*j for j in range(1, size_of_dataset + 1)]
 
     for i in range(size_of_dataset):
         print("dataset index", i)
