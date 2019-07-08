@@ -9,7 +9,7 @@ VERBOSE = True
 
 CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
-size_of_dataset = 50
+size_of_dataset = 10
 
 CAP = 0.9
 

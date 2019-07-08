@@ -13,7 +13,7 @@ CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
 EDGE_QUERY_SEEDING = False
 
-size_of_dataset = 20
+size_of_dataset = 10
 
 CAP = 0.9
 
@@ -36,6 +36,7 @@ def analyze_cost_vs_performance(network_id):
     network_size = NX.number_of_nodes(G)
 
     print('network id', network_id, 'original')
+    print('network size', network_size)
 
     if CHECK_FOR_EXISTING_PKL_SAMPLES:
         path = Path(spreading_pickled_samples_directory_address + 'infection_size_original_'
@@ -49,20 +50,20 @@ def analyze_cost_vs_performance(network_id):
 
     # Running seeding and spreading simulations
     spread_size_samples = []
-    query_cost_samples = [50*k*j for j in range(1, size_of_dataset + 1)]
+    query_cost_samples = [2*k*j for j in range(1, size_of_dataset + 1)]
 
     for i in range(size_of_dataset):
         print("dataset index", i)
-        eps = 0.8
-        alpha = 0.95
-        eps_prime = 2 * eps * (1 + alpha * (1 - eps))
+        eps = 0.2
+        a = 0.95
+        eps_prime = 2 * eps * (1 + a * (1 - eps))
 
         if EDGE_QUERY_SEEDING:
             rho = (2 + eps) * (k * delta * np.log(network_size) + np.log(2)) / (2 * eps * eps * network_size)
             tau = np.log(1 / eps) * network_size / (eps * k)
         else:
             rho = query_cost_samples[i] / k
-            tau = 0.95 * network_size
+            tau = 0.9 * network_size
 
         T = int (3 * (delta + np.log(2)) * (k+1) * np.log(network_size) / (eps * eps))
 
@@ -96,7 +97,7 @@ def analyze_cost_vs_performance(network_id):
             print('model_id is not valid')
             exit()
 
-        spread_size_sample = dynamics.get_cost_vs_performance(cap = CAP)
+        spread_size_sample = dynamics.get_cost_vs_performance(cap = CAP, sample_size = 20)
         spread_size_samples.append(spread_size_sample)
 
     if VERBOSE:

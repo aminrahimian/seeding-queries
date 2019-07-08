@@ -43,7 +43,7 @@ def natural_keys(text):
 
 
 # real world networks simulation settings:
-network_group = 'fb100_edgelist_'
+network_group = 'banerjee_combined_edgelist_'
 #'chami_union_edgelist_'
 # 'chami_union_edgelist_'
 # 'fb100_edgelist_'
@@ -169,7 +169,7 @@ if model_id == '_vanilla IC_':
     alpha = 0.0
     gamma = 1.0
     delta = 0.0
-    beta = 0.2
+    beta = 0.1
     k = 2
 else:
     print('model_id is not valid')
