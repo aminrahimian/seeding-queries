@@ -43,7 +43,7 @@ def natural_keys(text):
 
 
 # real world networks simulation settings:
-network_group = 'banerjee_combined_edgelist_'
+network_group = 'fb100_edgelist_'
 #'chami_union_edgelist_'
 # 'chami_union_edgelist_'
 # 'fb100_edgelist_'
@@ -103,7 +103,7 @@ elif network_group == 'fb100_edgelist_':
     TAKE_SMALLEST_N = True
 
     if TAKE_SMALLEST_N:
-        SMALLEST_N = 40
+        SMALLEST_N = 1
 
 edgelist_directory_address = root_data_address + 'edgelists/'
 
@@ -299,7 +299,7 @@ except OSError as e:
 #
 # for computations:
 do_computations = True
-do_multiprocessing = True
+do_multiprocessing = False
 save_computations = True
 load_computations = False
 do_plots = False

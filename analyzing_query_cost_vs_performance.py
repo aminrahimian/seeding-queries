@@ -13,7 +13,7 @@ CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
 EDGE_QUERY_SEEDING = False
 
-size_of_dataset = 50
+size_of_dataset = 10
 
 CAP = 0.9
 
@@ -47,51 +47,58 @@ def analyze_cost_vs_performance(network_id):
                   + model_id + ' already exists')
             return
 
-    eps = 0.8
-    alpha = 0.95
-    eps_prime = 2 * eps * (1 + alpha * (1 - eps))
-    
-    if EDGE_QUERY_SEEDING:
-        rho = (2 + eps) * (k * delta * np.log(network_size) + np.log(2)) / (2 * eps * eps * network_size)
-        tau = np.log(1 / eps) * network_size / (eps * k)
-    else:
-        rho = 0.2 * network_size
-        tau = 0.95
-    
-    T = int (3 * (delta + np.log(2)) * (k+1) * np.log(network_size) / (eps * eps))
+    # Running seeding and spreading simulations
+    spread_size_samples = []
+    query_cost_samples = [k*j for j in range(1, size_of_dataset + 1)]
 
-    params_original = {
-        'network': G,
-        'original_network': G,
-        'size': network_size,
-        'add_edges': False,
-        'k': k,
-        'delta': delta,
-        'alpha': alpha,
-        'beta': beta,
-        'gamma': gamma,
-        'eps' : eps,
-        'eps_prime' : eps_prime,
-        'rho' : rho,
-        'T' : T,
-        'tau' : tau,
-        'memory': memory,
-        'rewire': False,
-        'rewiring_mode': 'random_random',
-        'num_edges_for_random_random_rewiring': None,
-    }
-    if model_id == '_vanilla IC_':
+    for i in range(size_of_dataset):
+        print("dataset index", i)
+        eps = 0.8
+        alpha = 0.95
+        eps_prime = 2 * eps * (1 + alpha * (1 - eps))
+
         if EDGE_QUERY_SEEDING:
-            dynamics = IndependentCascadeEdgeQuerySeeding(params_original)
+            rho = (2 + eps) * (k * delta * np.log(network_size) + np.log(2)) / (2 * eps * eps * network_size)
+            tau = np.log(1 / eps) * network_size / (eps * k)
         else:
-            dynamics = IndependentCascadeSpreadQuerySeeding(params_original)
-    else:
-        print('model_id is not valid')
-        exit()
-    
-    spread_size_samples, query_cost_samples = dynamics.get_cost_vs_performance(
-        dataset_size=size_of_dataset
-    )
+            rho = query_cost_samples[i] / k
+            tau = 0.95 * network_size
+
+        T = int (3 * (delta + np.log(2)) * (k+1) * np.log(network_size) / (eps * eps))
+
+        params_original = {
+            'network': G,
+            'original_network': G,
+            'size': network_size,
+            'add_edges': False,
+            'k': k,
+            'delta': delta,
+            'alpha': alpha,
+            'beta': beta,
+            'gamma': gamma,
+            'eps' : eps,
+            'eps_prime' : eps_prime,
+            'rho' : rho,
+            'T' : T,
+            'tau' : tau,
+            'memory': memory,
+            'rewire': False,
+            'rewiring_mode': 'random_random',
+            'num_edges_for_random_random_rewiring': None,
+        }
+
+        if model_id == '_vanilla IC_':
+            if EDGE_QUERY_SEEDING:
+                dynamics = IndependentCascadeEdgeQuerySeeding(params_original)
+            else:
+                dynamics = IndependentCascadeSpreadQuerySeeding(params_original)
+        else:
+            print('model_id is not valid')
+            exit()
+
+        spread_size_sample = dynamics.get_cost_vs_performance(cap = CAP)
+        spread_size_samples.append(spread_size_sample)
+
     if VERBOSE:
         print('================================================', "\n",
               'spread size samples: ', spread_size_samples, "\n",
