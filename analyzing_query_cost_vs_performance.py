@@ -50,7 +50,8 @@ def analyze_cost_vs_performance(network_id):
 
     # Running seeding and spreading simulations
     spread_size_samples = []
-    query_cost_samples = [2*k*j for j in range(1, size_of_dataset + 1)]
+    query_cost_samples = list(np.logspace(start = 1.0, end = np.log2(40), size = 10, base = 2))
+    query_cost_samples = [np.ceil(cost) for cost in query_cost_samples]
 
     for i in range(size_of_dataset):
         print("dataset index", i)
