@@ -299,7 +299,7 @@ except OSError as e:
 #
 # for computations:
 do_computations = True
-do_multiprocessing = False
+do_multiprocessing = True
 save_computations = True
 load_computations = False
 do_plots = False
