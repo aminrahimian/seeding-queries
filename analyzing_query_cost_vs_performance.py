@@ -49,7 +49,7 @@ def analyze_cost_vs_performance(network_id):
 
     # Running seeding and spreading simulations
     spread_size_samples = []
-    query_cost_samples = [k*j for j in range(1, size_of_dataset + 1)]
+    query_cost_samples = [10*k*j for j in range(1, size_of_dataset + 1)]
 
     for i in range(size_of_dataset):
         print("dataset index", i)
