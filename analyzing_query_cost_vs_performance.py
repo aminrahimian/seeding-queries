@@ -4,6 +4,10 @@ from pathlib import Path
 
 import numpy as np
 
+from functools import partial
+
+import multiprocessing
+
 import os
 
 
@@ -13,11 +17,53 @@ CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
 EDGE_QUERY_SEEDING = False
 
-size_of_dataset = 10
+MULTIPROCESS_DATASET = True
+
+size_of_dataset = 100
 
 CAP = 0.9
 
 
+def analyze_performance_for_given_cost(query_cost, G, network_size, eps, eps_prime, tau, T):
+    if EDGE_QUERY_SEEDING:
+        rho = (2 + eps) * (k * delta * np.log(network_size) + np.log(2)) / (2 * eps * eps * network_size)
+    else:
+        rho = query_cost / k
+
+    params_original = {
+        'network': G,
+        'original_network': G,
+        'size': network_size,
+        'add_edges': False,
+        'k': k,
+        'delta': delta,
+        'alpha': alpha,
+        'beta': beta,
+        'gamma': gamma,
+        'eps' : eps,
+        'eps_prime' : eps_prime,
+        'rho' : rho,
+        'T' : T,
+        'tau' : tau,
+        'memory': memory,
+        'rewire': False,
+        'rewiring_mode': 'random_random',
+        'num_edges_for_random_random_rewiring': None,
+    }
+
+    if model_id == '_vanilla IC_':
+        if EDGE_QUERY_SEEDING:
+            dynamics = IndependentCascadeEdgeQuerySeeding(params_original)
+        else:
+            dynamics = IndependentCascadeSpreadQuerySeeding(params_original)
+    else:
+        print('model_id is not valid')
+        exit()
+
+    spread_size_sample = dynamics.get_cost_vs_performance(cap = CAP, sample_size = 50)
+    return spread_size_sample
+
+        
 def analyze_cost_vs_performance(network_id):
     #  load in the network and extract preliminary data
     fh = open(edgelist_directory_address + network_group + network_id + '.txt', 'rb')
@@ -50,56 +96,40 @@ def analyze_cost_vs_performance(network_id):
 
     # Running seeding and spreading simulations
     spread_size_samples = []
-    query_cost_samples = list(np.logspace(start = 1.0, end = np.log2(40), size = 10, base = 2))
+    query_cost_samples = list(np.logspace(start = 1.0, stop = np.log2(40), num = size_of_dataset, base = 2))
     query_cost_samples = [np.ceil(cost) for cost in query_cost_samples]
 
-    for i in range(size_of_dataset):
-        print("dataset index", i)
-        eps = 0.2
-        a = 0.95
-        eps_prime = 2 * eps * (1 + a * (1 - eps))
+    eps = 0.2
+    a = 0.95
+    eps_prime = 2 * eps * (1 + a * (1 - eps))
+    T = int (3 * (delta + np.log(2)) * (k+1) * np.log(network_size) / (eps * eps))
 
-        if EDGE_QUERY_SEEDING:
-            rho = (2 + eps) * (k * delta * np.log(network_size) + np.log(2)) / (2 * eps * eps * network_size)
-            tau = np.log(1 / eps) * network_size / (eps * k)
-        else:
-            rho = query_cost_samples[i] / k
-            tau = 0.9 * network_size
+    if EDGE_QUERY_SEEDING:
+        tau = np.log(1 / eps) * network_size / (eps * k)
+    else:
+        tau = 0.9 * network_size
 
-        T = int (3 * (delta + np.log(2)) * (k+1) * np.log(network_size) / (eps * eps))
-
-        params_original = {
-            'network': G,
-            'original_network': G,
-            'size': network_size,
-            'add_edges': False,
-            'k': k,
-            'delta': delta,
-            'alpha': alpha,
-            'beta': beta,
-            'gamma': gamma,
-            'eps' : eps,
-            'eps_prime' : eps_prime,
-            'rho' : rho,
-            'T' : T,
-            'tau' : tau,
-            'memory': memory,
-            'rewire': False,
-            'rewiring_mode': 'random_random',
-            'num_edges_for_random_random_rewiring': None,
-        }
-
-        if model_id == '_vanilla IC_':
-            if EDGE_QUERY_SEEDING:
-                dynamics = IndependentCascadeEdgeQuerySeeding(params_original)
-            else:
-                dynamics = IndependentCascadeSpreadQuerySeeding(params_original)
-        else:
-            print('model_id is not valid')
-            exit()
-
-        spread_size_sample = dynamics.get_cost_vs_performance(cap = CAP, sample_size = 20)
-        spread_size_samples.append(spread_size_sample)
+    if MULTIPROCESS_DATASET:
+        analyze_performance_partial = partial(analyze_performance_for_given_cost,
+                                              G = G,
+                                              network_size = network_size,
+                                              eps = eps,
+                                              eps_prime = eps_prime,
+                                              tau = tau,
+                                              T = T)
+        with multiprocessing.Pool(processes=5) as pool:
+            spread_size_samples = pool.map(analyze_performance_partial, query_cost_samples)        
+    else:
+        for i in range(size_of_dataset):
+            print("dataset index", i)
+            spread_size_sample = analyze_performance_for_given_cost(query_cost_samples[i],
+                                                                    G, 
+                                                                    network_size, 
+                                                                    eps, 
+                                                                    eps_prime, 
+                                                                    tau, 
+                                                                    T)
+            spread_size_samples.append(spread_size_sample)
 
     if VERBOSE:
         print('================================================', "\n",
