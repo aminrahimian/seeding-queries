@@ -19,7 +19,7 @@ EDGE_QUERY_SEEDING = False
 
 MULTIPROCESS_DATASET = True
 
-size_of_dataset = 100
+size_of_dataset = 10
 
 CAP = 0.9
 
@@ -60,7 +60,7 @@ def analyze_performance_for_given_cost(query_cost, G, network_size, eps, eps_pri
         print('model_id is not valid')
         exit()
 
-    spread_size_sample = dynamics.get_cost_vs_performance(cap = CAP, sample_size = 50)
+    spread_size_sample = dynamics.get_cost_vs_performance(cap = CAP, sample_size = 1000)
     return spread_size_sample
 
         
@@ -117,7 +117,7 @@ def analyze_cost_vs_performance(network_id):
                                               eps_prime = eps_prime,
                                               tau = tau,
                                               T = T)
-        with multiprocessing.Pool(processes=5) as pool:
+        with multiprocessing.Pool(processes=size_of_dataset) as pool:
             spread_size_samples = pool.map(analyze_performance_partial, query_cost_samples)        
     else:
         for i in range(size_of_dataset):
