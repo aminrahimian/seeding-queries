@@ -946,7 +946,7 @@ class ContagionModel(object):
 
             spread_size_samples.append(total_number_of_infected)
 
-        return np.average(spread_size_samples), sum(spread < 10.0 for spread in spread_size_samples)
+        return (np.average(spread_size_samples), np.std(spread_size_samples), sum(spread < 10.0 for spread in spread_size_samples))
 
     def outer_step(self):
         assert hasattr(self, 'classification_label'), 'classification_label not set'
