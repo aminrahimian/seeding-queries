@@ -170,7 +170,7 @@ if model_id == '_vanilla IC_':
     gamma = 1.0
     delta = 0.0
     beta = 0.1
-    k = 2
+    k = 4
 else:
     print('model_id is not valid')
     exit()
@@ -188,6 +188,8 @@ network_id_list.sort(key=natural_keys)
 print('without checking the availability of samples or taking smaller ones:')
 
 print(network_id_list)
+
+network_id_list = ['52']
 
 try:
     if GENERATE_NET_LIST_FROM_AVAILABLE_SAMPLES == True:
@@ -249,6 +251,8 @@ try:
 
         print(network_id_list)
 
+
+
 except NameError:
 
     print('could not check for availability of samples or take smaller ones')
@@ -299,7 +303,7 @@ except OSError as e:
 #
 # for computations:
 do_computations = True
-do_multiprocessing = True
+do_multiprocessing = False
 save_computations = True
 load_computations = False
 do_plots = False
@@ -392,7 +396,7 @@ if do_multiprocessing:
     if 'SLURM_ARRAY_TASK_ID' in os.environ:
         number_CPU = 3
     else:
-        number_CPU = 40
+        number_CPU = 20
 
 
 def combine(list_of_names,output_name):
