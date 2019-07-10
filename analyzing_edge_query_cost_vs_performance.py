@@ -147,7 +147,7 @@ def analyze_cost_vs_performance(network_id):
                                                  + model_id + '.pkl', 'wb'))
 
         pickle.dump(edge_discovery_cost_samples, open(data_dump_folder
-                                                 + 'edge_discovery_cost_samples'
+                                                 + 'edge_discovery_cost_samples_'
                                                  + network_group + network_id
                                                  + model_id + '.pkl', 'wb'))
 
