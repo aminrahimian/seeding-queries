@@ -96,7 +96,7 @@ def analyze_cost_vs_performance(network_id):
 
     # Running seeding and spreading simulations
     spread_size_samples = []
-    query_cost_samples = list(np.logspace(start = 1.0, stop = np.log2(40), num = size_of_dataset, base = 2))
+    query_cost_samples = list(np.logspace(start = 0.0, stop = np.log2(80), num = size_of_dataset, base = 2))
     query_cost_samples = [np.ceil(cost) for cost in query_cost_samples]
 
     eps = 0.2
