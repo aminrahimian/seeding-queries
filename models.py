@@ -716,7 +716,7 @@ class ContagionModel(object):
         self.init_network()
 
         if with_seed:
-            seed_set = self.seed()
+            seed_set, node_discovery_cost, edge_discovery_cost = self.seed()
         else:
             seed_set = []
 
@@ -725,6 +725,9 @@ class ContagionModel(object):
         self.missing_params_not_set = False
 
         self.spread_stopped = False
+
+        if with_seed:
+            return node_discovery_cost, edge_discovery_cost
 
     def time_the_total_spread(self, cap=0.99,
                               get_time_series=False,
@@ -917,10 +920,14 @@ class ContagionModel(object):
 
     def get_cost_vs_performance(self, cap=0.9, sample_size = 30):
         spread_size_samples = []
+        node_discovery_cost_samples = []
+        edge_discovery_cost_samples = []
 
         for i in range(sample_size):
             self.missing_params_not_set = True
-            self.random_init()
+            node_discovery_cost, edge_discovery_cost = self.random_init()
+            node_discovery_cost_samples.append(node_discovery_cost)
+            edge_discovery_cost_samples.append(edge_discovery_cost)
 
             time = 0
 
@@ -946,7 +953,9 @@ class ContagionModel(object):
 
             spread_size_samples.append(total_number_of_infected)
 
-        return (np.average(spread_size_samples), np.std(spread_size_samples), sum(spread < 10.0 for spread in spread_size_samples))
+        return (np.average(spread_size_samples), np.std(spread_size_samples), sum(spread < 10.0 for spread in spread_size_samples),
+                np.average(node_discovery_cost_samples), np.std(node_discovery_cost_samples),
+                np.average(edge_discovery_cost_samples), np.std(edge_discovery_cost_samples))
 
     def outer_step(self):
         assert hasattr(self, 'classification_label'), 'classification_label not set'
@@ -1167,6 +1176,8 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
         # Assumption: probe parameters rho, T and tau are assumed to be provided on init
 
         probed_subgraphs = []
+        discovered_nodes = set()
+        discovered_edges = set()
 
         for i in range(self.params['T']):
             probed_subgraph = []
@@ -1177,17 +1188,24 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
             while len(candidate_nodes) != 0:
                 candidate_node = candidate_nodes.pop()
 
+                discovered_nodes.add(candidate_node)
                 next_candidate_node = self.reveal_nbhr(candidate_node)
 
                 if next_candidate_node is not None:
                     candidate_nodes.add(next_candidate_node)
                     predecessor_table[next_candidate_node] = candidate_node
 
+                    if (candidate_node, next_candidate_node) not in discovered_edges \
+                        and (next_candidate_node, candidate_node) not in discovered_edges:
+                        discovered_edges.add((candidate_node, next_candidate_node))
+
                 in_new_component = True
                 for component in probed_subgraph:
                     if predecessor_table[candidate_node] in component:
                         component.add(candidate_node)
                         in_new_component = False
+                        if len(component) > self.params['tau']:
+                            candidate_nodes.difference_update(component)
 
                 if in_new_component:
                     probed_subgraph.append({candidate_node})
@@ -1196,15 +1214,19 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
             del(candidate_nodes)
             del(predecessor_table)
 
+        node_discovery_cost = len(discovered_nodes)
+        edge_discovery_cost = len(discovered_edges)
         del(sampled_nodes)
-        return probed_subgraphs
+        del(discovered_nodes)
+        del(discovered_edges)
+        return probed_subgraphs, node_discovery_cost, edge_discovery_cost
 
     def query(self):
         sample_size = int(self.params['size'] * self.params['rho'])
         sampled_nodes = np.random.choice(list(self.params['network'].nodes()),
                                          sample_size,
                                          replace = False)
-        probed_subgraphs = self.probe(sampled_nodes)
+        probed_subgraphs, node_discovery_cost, edge_discovery_cost = self.probe(sampled_nodes)
 
         all_components = list(itertools.chain.from_iterable(probed_subgraphs))
         sampled_nodes_set = set(sampled_nodes)
@@ -1214,10 +1236,10 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
         del(sampled_nodes)
         del(probed_subgraphs)
         del(sampled_nodes_set)
-        return (all_components, component_scores)
+        return (all_components, component_scores, node_discovery_cost, edge_discovery_cost)
     
     def seed(self):
-        all_components, component_scores = self.query()
+        all_components, component_scores, node_discovery_cost, edge_discovery_cost = self.query()
 
         candidate_sample_size = int((self.params['size'] / self.params['k']) * np.log(1 / self.params['eps_prime']))
         search_set = set(self.params['network'].nodes())
@@ -1252,7 +1274,7 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
         del(candidate_sample_size)
         del(search_set)
 
-        return seed_set
+        return (seed_set, node_discovery_cost, edge_discovery_cost)
 
 
 class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
