@@ -8,6 +8,8 @@ from functools import partial
 
 import multiprocessing
 
+from multipool import Multipool
+
 import os
 
 
@@ -19,13 +21,13 @@ MULTIPROCESS_DATASET = True
 
 MULTIPROCESS_SAMPLE = True
 
-size_of_dataset = 10
+size_of_dataset = 2
 
-sample_size = 1000
+sample_size = 2
 
-num_dataset_cpus = 10
+num_dataset_cpus = 2
 
-num_sample_cpus = 10
+num_sample_cpus = 2
 
 CAP = 0.9
 
@@ -116,7 +118,7 @@ def analyze_cost_vs_performance(network_id):
                                               eps_prime = eps_prime,
                                               tau = tau,
                                               T = T)
-        with multiprocessing.Pool(processes=size_of_dataset) as pool:
+        with Multipool(processes=size_of_dataset) as pool:
             spread_size_samples = pool.map(analyze_performance_partial, query_cost_samples)        
     else:
         for i in range(size_of_dataset):
@@ -159,7 +161,7 @@ if __name__ == '__main__':
     assert do_computations, "we should be in do_computations mode"
 
     if do_multiprocessing:
-        with multiprocessing.Pool(processes=number_CPU) as pool:
+        with Multipool(processes=number_CPU) as pool:
 
             pool.map(analyze_cost_vs_performance, network_id_list)
 
