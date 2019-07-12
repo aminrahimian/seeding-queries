@@ -2,6 +2,8 @@
 
 import multiprocessing
 
+import multiprocessing.pool
+
 
 class NonDaemonProcess(multiprocessing.Process):
     def _get_daemon(self):

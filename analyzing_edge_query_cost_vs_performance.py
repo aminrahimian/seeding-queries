@@ -6,6 +6,8 @@ import numpy as np
 
 from functools import partial
 
+from multipool import Multipool
+
 import multiprocessing
 
 import os
@@ -110,7 +112,7 @@ def analyze_cost_vs_performance(network_id):
         analyze_performance_partial = partial(analyze_performance_for_given_rho,
                                               G = G,
                                               network_size = network_size)
-        with multiprocessing.Pool(processes = num_cpus) as pool:
+        with Multipool(processes = num_cpus) as pool:
             spread_results = pool.map(analyze_performance_partial, rhos)
         spread_size_samples = [result[0] for result in spread_results]
         node_discovery_cost_samples = [result[1] for result in spread_results]
@@ -157,7 +159,7 @@ if __name__ == '__main__':
     assert do_computations, "we should be in do_computations mode"
 
     if do_multiprocessing:
-        with multiprocessing.Pool(processes=number_CPU) as pool:
+        with Multipool(processes=number_CPU) as pool:
 
             pool.map(analyze_cost_vs_performance, network_id_list)
 
