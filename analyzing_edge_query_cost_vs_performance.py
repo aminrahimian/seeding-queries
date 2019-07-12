@@ -19,9 +19,15 @@ CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
 MULTIPROCESS_DATASET = True
 
+MULTIPROCESS_SAMPLE = True
+
 size_of_dataset = 10
 
-num_cpus = 10
+sample_size = 1000
+
+num_dataset_cpus = 10
+
+num_sample_cpus = 10
 
 CAP = 0.9
 
@@ -65,7 +71,10 @@ def analyze_performance_for_given_rho(rho, G, network_size):
     avg_spread_size_sample, std_spread_size_sample, num_of_failed_spread, \
         avg_node_discovery_cost_sample, std_node_discovery_cost_sample, \
         avg_edge_discovery_cost_sample, std_edge_discovery_cost_sample \
-            = dynamics.get_cost_vs_performance(cap = CAP, sample_size = 1)
+            = dynamics.get_cost_vs_performance(cap = CAP, 
+                                               sample_size = sample_size, 
+                                               multiprocess = MULTIPROCESS_SAMPLE, 
+                                               num_sample_cpus = num_dataset_cpus)
 
     return ((avg_spread_size_sample, std_spread_size_sample, num_of_failed_spread),
             (avg_node_discovery_cost_sample, std_node_discovery_cost_sample),
@@ -112,7 +121,7 @@ def analyze_cost_vs_performance(network_id):
         analyze_performance_partial = partial(analyze_performance_for_given_rho,
                                               G = G,
                                               network_size = network_size)
-        with Multipool(processes = num_cpus) as pool:
+        with Multipool(processes = num_dataset_cpus) as pool:
             spread_results = pool.map(analyze_performance_partial, rhos)
         spread_size_samples = [result[0] for result in spread_results]
         node_discovery_cost_samples = [result[1] for result in spread_results]

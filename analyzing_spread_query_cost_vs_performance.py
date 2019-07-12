@@ -15,20 +15,23 @@ VERBOSE = True
 
 CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
-EDGE_QUERY_SEEDING = False
-
 MULTIPROCESS_DATASET = True
 
+MULTIPROCESS_SAMPLE = True
+
 size_of_dataset = 10
+
+sample_size = 1000
+
+num_dataset_cpus = 10
+
+num_sample_cpus = 10
 
 CAP = 0.9
 
 
 def analyze_performance_for_given_cost(query_cost, G, network_size, eps, eps_prime, tau, T):
-    if EDGE_QUERY_SEEDING:
-        rho = (2 + eps) * (k * delta * np.log(network_size) + np.log(2)) / (2 * eps * eps * network_size)
-    else:
-        rho = query_cost / k
+    rho = query_cost / k
 
     params_original = {
         'network': G,
@@ -52,15 +55,15 @@ def analyze_performance_for_given_cost(query_cost, G, network_size, eps, eps_pri
     }
 
     if model_id == '_vanilla IC_':
-        if EDGE_QUERY_SEEDING:
-            dynamics = IndependentCascadeEdgeQuerySeeding(params_original)
-        else:
-            dynamics = IndependentCascadeSpreadQuerySeeding(params_original)
+        dynamics = IndependentCascadeSpreadQuerySeeding(params_original)
     else:
         print('model_id is not valid')
         exit()
 
-    spread_size_sample = dynamics.get_cost_vs_performance(cap = CAP, sample_size = 1000)
+    spread_size_sample = dynamics.get_cost_vs_performance(cap = CAP, 
+                                                          sample_size = sample_size,
+                                                          multiprocess = MULTIPROCESS_SAMPLE,
+                                                          num_sample_cpus = num_sample_cpus)
     return spread_size_sample
 
         
@@ -103,11 +106,7 @@ def analyze_cost_vs_performance(network_id):
     a = 0.95
     eps_prime = 2 * eps * (1 + a * (1 - eps))
     T = int (3 * (delta + np.log(2)) * (k+1) * np.log(network_size) / (eps * eps))
-
-    if EDGE_QUERY_SEEDING:
-        tau = np.log(1 / eps) * network_size / (eps * k)
-    else:
-        tau = 0.9 * network_size
+    tau = 0.9 * network_size
 
     if MULTIPROCESS_DATASET:
         analyze_performance_partial = partial(analyze_performance_for_given_cost,
@@ -138,7 +137,7 @@ def analyze_cost_vs_performance(network_id):
               '================================================')
 
     if save_computations:
-        seeding_model_folder = "/edge_query/" if EDGE_QUERY_SEEDING else "/spread_query/"
+        seeding_model_folder = "/spread_query/"
         data_dump_folder = (spreading_pickled_samples_directory_address
                                                 + 'k_' + str(k)
                                                 + seeding_model_folder)
