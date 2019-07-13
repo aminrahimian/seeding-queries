@@ -6,6 +6,8 @@ import numpy as np
 
 from functools import partial
 
+from multipool import Multipool
+
 import multiprocessing
 
 import os
@@ -17,9 +19,15 @@ CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
 MULTIPROCESS_DATASET = True
 
-size_of_dataset = 10
+MULTIPROCESS_SAMPLE = True
 
-num_cpus = 10
+size_of_dataset = 2
+
+sample_size = 2
+
+num_dataset_cpus = 2
+
+num_sample_cpus = 2
 
 CAP = 0.9
 
@@ -63,7 +71,10 @@ def analyze_performance_for_given_rho(rho, G, network_size):
     avg_spread_size_sample, std_spread_size_sample, num_of_failed_spread, \
         avg_node_discovery_cost_sample, std_node_discovery_cost_sample, \
         avg_edge_discovery_cost_sample, std_edge_discovery_cost_sample \
-            = dynamics.get_cost_vs_performance(cap = CAP, sample_size = 1)
+            = dynamics.get_cost_vs_performance(cap = CAP, 
+                                               sample_size = sample_size, 
+                                               multiprocess = MULTIPROCESS_SAMPLE, 
+                                               num_sample_cpus = num_dataset_cpus)
 
     return ((avg_spread_size_sample, std_spread_size_sample, num_of_failed_spread),
             (avg_node_discovery_cost_sample, std_node_discovery_cost_sample),
@@ -110,7 +121,7 @@ def analyze_cost_vs_performance(network_id):
         analyze_performance_partial = partial(analyze_performance_for_given_rho,
                                               G = G,
                                               network_size = network_size)
-        with multiprocessing.Pool(processes = num_cpus) as pool:
+        with Multipool(processes = num_dataset_cpus) as pool:
             spread_results = pool.map(analyze_performance_partial, rhos)
         spread_size_samples = [result[0] for result in spread_results]
         node_discovery_cost_samples = [result[1] for result in spread_results]
@@ -147,7 +158,7 @@ def analyze_cost_vs_performance(network_id):
                                                  + model_id + '.pkl', 'wb'))
 
         pickle.dump(edge_discovery_cost_samples, open(data_dump_folder
-                                                 + 'edge_discovery_cost_samples'
+                                                 + 'edge_discovery_cost_samples_'
                                                  + network_group + network_id
                                                  + model_id + '.pkl', 'wb'))
 
@@ -157,7 +168,7 @@ if __name__ == '__main__':
     assert do_computations, "we should be in do_computations mode"
 
     if do_multiprocessing:
-        with multiprocessing.Pool(processes=number_CPU) as pool:
+        with Multipool(processes=number_CPU) as pool:
 
             pool.map(analyze_cost_vs_performance, network_id_list)
 

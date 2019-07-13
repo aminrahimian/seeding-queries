@@ -3,6 +3,10 @@ import gc
 import copy
 import itertools
 
+from functools import partial
+
+from multipool import Multipool
+
 TRACK_TIME_SINCE_VARIABLES = True
 
 
@@ -918,44 +922,65 @@ class ContagionModel(object):
         return avg_speed, speed_std, speed_max, speed_min, speed_samples, \
                avg_infection_size, infection_size_std, infection_size_max, infection_size_min, infection_size_samples
 
-    def get_cost_vs_performance(self, cap=0.9, sample_size = 30):
-        spread_size_samples = []
-        node_discovery_cost_samples = []
-        edge_discovery_cost_samples = []
+    def sample_cost_vs_performance(self, sample_id, cap = 0.9):
+        self.missing_params_not_set = True
+        node_discovery_cost, edge_discovery_cost = self.random_init()
 
-        for i in range(sample_size):
-            self.missing_params_not_set = True
-            node_discovery_cost, edge_discovery_cost = self.random_init()
-            node_discovery_cost_samples.append(node_discovery_cost)
-            edge_discovery_cost_samples.append(edge_discovery_cost)
+        time = 0
 
-            time = 0
+        if hasattr(self, 'isActivationModel'):
+            self.set_activation_functions()
 
-            if hasattr(self, 'isActivationModel'):
-                self.set_activation_functions()
+        all_nodes_states = list(
+            map(lambda node_pointer: 1.0 * self.params['network'].node[node_pointer]['state'],
+                self.params['network'].nodes()))
+        total_number_of_infected = 2 * np.sum(abs(np.asarray(all_nodes_states)))
 
+        while (total_number_of_infected < cap * self.params['size']) and (not self.spread_stopped):
+            self.outer_step()
+            time += 1
             all_nodes_states = list(
                 map(lambda node_pointer: 1.0 * self.params['network'].node[node_pointer]['state'],
                     self.params['network'].nodes()))
             total_number_of_infected = 2 * np.sum(abs(np.asarray(all_nodes_states)))
+            if time > self.params['size'] * 10:
+                time = float('Inf')
+                print('It is taking too long (10x size) to spread totally.')
+                break
 
-            while (total_number_of_infected < cap * self.params['size']) and (not self.spread_stopped):
-                self.outer_step()
-                time += 1
-                all_nodes_states = list(
-                    map(lambda node_pointer: 1.0 * self.params['network'].node[node_pointer]['state'],
-                        self.params['network'].nodes()))
-                total_number_of_infected = 2 * np.sum(abs(np.asarray(all_nodes_states)))
-                if time > self.params['size'] * 10:
-                    time = float('Inf')
-                    print('It is taking too long (10x size) to spread totally.')
-                    break
+        del(all_nodes_states)
+        return total_number_of_infected, node_discovery_cost, edge_discovery_cost
 
-            spread_size_samples.append(total_number_of_infected)
+    def get_cost_vs_performance(self, cap=0.9, sample_size = 30, multiprocess = True, num_sample_cpus = 10):
+        spread_size_samples = []
+        node_discovery_cost_samples = []
+        edge_discovery_cost_samples = []
 
-        return (np.average(spread_size_samples), np.std(spread_size_samples), sum(spread < 10.0 for spread in spread_size_samples),
-                np.average(node_discovery_cost_samples), np.std(node_discovery_cost_samples),
-                np.average(edge_discovery_cost_samples), np.std(edge_discovery_cost_samples))
+        if not multiprocess:
+            for i in range(sample_size):
+                spread_size_sample, node_discovery_cost_sample, edge_discovery_cost_sample \
+                    = self.sample_cost_vs_performance(sample_id = i, cap = cap)
+            
+            spread_size_samples.append(spread_size_sample)
+            node_discovery_cost_samples.append(node_discovery_cost_sample)
+            edge_discovery_cost_samples.append(edge_discovery_cost_sample)
+        
+        else:
+            partial_sample_cost_vs_performance = partial(self.sample_cost_vs_performance,
+                                                         cap = cap)
+            with Multipool(processes = num_sample_cpus) as pool:
+                spread_data = pool.map(partial_sample_cost_vs_performance, list(range(sample_size)))
+
+            spread_size_samples = [spread_data[i][0] for i in range(sample_size)]
+            node_discovery_cost_samples = [spread_data[i][1] for i in range(sample_size)]
+            edge_discovery_cost_samples = [spread_data[i][2] for i in range(sample_size)]
+
+        if node_discovery_cost_samples[0] is None:
+            return (np.average(spread_size_samples), np.std(spread_size_samples), sum(spread < 10.0 for spread in spread_size_samples))
+        else:
+            return (np.average(spread_size_samples), np.std(spread_size_samples), sum(spread < 10.0 for spread in spread_size_samples),
+                    np.average(node_discovery_cost_samples), np.std(node_discovery_cost_samples),
+                    np.average(edge_discovery_cost_samples), np.std(edge_discovery_cost_samples))
 
     def outer_step(self):
         assert hasattr(self, 'classification_label'), 'classification_label not set'
@@ -1354,4 +1379,4 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
             del(sampled_spreads)
 
         del(candidates)
-        return seeds
+        return (seeds, None, None)
