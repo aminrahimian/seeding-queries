@@ -74,7 +74,7 @@ def analyze_performance_for_given_rho(rho, G, network_size):
             = dynamics.get_cost_vs_performance(cap = CAP, 
                                                sample_size = sample_size, 
                                                multiprocess = MULTIPROCESS_SAMPLE, 
-                                               num_sample_cpus = num_dataset_cpus)
+                                               num_sample_cpus = num_sample_cpus)
 
     return ((avg_spread_size_sample, std_spread_size_sample, num_of_failed_spread),
             (avg_node_discovery_cost_sample, std_node_discovery_cost_sample),

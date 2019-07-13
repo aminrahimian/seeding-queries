@@ -118,7 +118,7 @@ def analyze_cost_vs_performance(network_id):
                                               eps_prime = eps_prime,
                                               tau = tau,
                                               T = T)
-        with Multipool(processes=size_of_dataset) as pool:
+        with Multipool(processes=num_dataset_cpus) as pool:
             spread_size_samples = pool.map(analyze_performance_partial, query_cost_samples)        
     else:
         for i in range(size_of_dataset):
