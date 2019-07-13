@@ -6,7 +6,7 @@ import numpy as np
 
 from functools import partial
 
-from multipool import Multipool
+from Multipool import Multipool
 
 import multiprocessing
 

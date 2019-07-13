@@ -8,7 +8,7 @@ from functools import partial
 
 import multiprocessing
 
-from multipool import Multipool
+from Multipool import Multipool
 
 import os
 
@@ -21,13 +21,13 @@ MULTIPROCESS_DATASET = True
 
 MULTIPROCESS_SAMPLE = True
 
-size_of_dataset = 2
+size_of_dataset = 4
 
-sample_size = 2
+sample_size = 10
 
 num_dataset_cpus = 2
 
-num_sample_cpus = 2
+num_sample_cpus = 10
 
 CAP = 0.9
 
@@ -101,7 +101,7 @@ def analyze_cost_vs_performance(network_id):
 
     # Running seeding and spreading simulations
     spread_size_samples = []
-    query_cost_samples = list(np.logspace(start = 0.0, stop = np.log2(80), num = size_of_dataset, base = 2))
+    query_cost_samples = list(np.logspace(start = 1.0, stop = np.log2(80), num = size_of_dataset, base = 2))
     query_cost_samples = [np.ceil(cost) for cost in query_cost_samples]
 
     eps = 0.2

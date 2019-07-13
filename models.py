@@ -5,7 +5,7 @@ import itertools
 
 from functools import partial
 
-from multipool import Multipool
+from Multipool import Multipool
 
 TRACK_TIME_SINCE_VARIABLES = True
 

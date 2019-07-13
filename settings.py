@@ -43,7 +43,8 @@ def natural_keys(text):
 
 
 # real world networks simulation settings:
-network_group = 'banerjee_combined_edgelist_'
+network_group = 'fb100_edgelist_'
+# 'banerjee_combined_edgelist_'
 #'chami_union_edgelist_'
 # 'chami_union_edgelist_'
 # 'fb100_edgelist_'
@@ -189,7 +190,7 @@ print('without checking the availability of samples or taking smaller ones:')
 
 print(network_id_list)
 
-network_id_list = ['52']
+network_id_list = ['MIT8']
 
 try:
     if GENERATE_NET_LIST_FROM_AVAILABLE_SAMPLES == True:
