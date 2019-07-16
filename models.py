@@ -1380,3 +1380,24 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
 
         del(candidates)
         return (seeds, None, None)
+
+
+class IndependentCascadeGreedySeeding(IndependentCascade):
+
+    def __init__(self, params):
+        super(IndependentCascadeGreedySeeding, self).__init__(params)
+
+    def generate_live_edge_map(self):
+        pass
+
+    def build_priority_queue(self):
+        pass
+
+    def compute_spread(self, live_edge_map, sample_id, i):
+        pass
+
+    def perform_next_iter(self, live_edge_map, active_set_map, seeds, queue):
+        pass
+
+    def seed(self):
+        pass
