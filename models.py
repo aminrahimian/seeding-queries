@@ -1451,7 +1451,7 @@ class IndependentCascadeGreedySeeding(IndependentCascade):
             heapq.heappush(queue, (new_negated_marginal_gain, new_iter_flag, node))
 
     def seed(self):
-        queue = [(float('-inf'), -1, node) for node in self.params['networks'].nodes()]
+        queue = [(float('-inf'), -1, node) for node in self.params['network'].nodes()]
         heapq.heapify(queue)
         seeds = []
 
