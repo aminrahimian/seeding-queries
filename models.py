@@ -1427,8 +1427,8 @@ class IndependentCascadeGreedySeeding(IndependentCascade):
     def sample_spread(self, initially_infected, sample_size):
         sample_seeds = [initially_infected for sample_id in range(sample_size)]
 
-        if self.params['multiprocess_sample_spread']:
-            with Multipool(processes = self.params['num_sample_cpus']) as pool:
+        if self.params['multiprocess_mg_sample']:
+            with Multipool(processes = self.params['num_mg_sample_cpus']) as pool:
                 sample_spreads = pool.map(self.spread, sample_seeds)
         else:
             sample_spreads = []
@@ -1442,10 +1442,11 @@ class IndependentCascadeGreedySeeding(IndependentCascade):
 
         if iter_flag == len(seeds):
             seeds.append(node)
+            print('seed', len(seeds), 'added')
         else:
             seeds_with_extra_node = copy.deepcopy(seeds) + [node]
-            new_negated_marginal_gain = (self.sample_spread(seeds, self.params['sample_size'])
-                                        - self.sample_spread(seeds_with_extra_node, self.params['sample_size']))
+            new_negated_marginal_gain = (self.sample_spread(seeds, self.params['mg_sample_size'])
+                                        - self.sample_spread(seeds_with_extra_node, self.params['mg_sample_size']))
             new_iter_flag = len(seeds)
             heapq.heappush(queue, (new_negated_marginal_gain, new_iter_flag, node))
 
