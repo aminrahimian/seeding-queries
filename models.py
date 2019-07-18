@@ -2,6 +2,7 @@ from settings import *
 import gc
 import copy
 import itertools
+import heapq
 
 from functools import partial
 
@@ -1379,4 +1380,80 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
             del(sampled_spreads)
 
         del(candidates)
+        return (seeds, None, None)
+
+
+class IndependentCascadeGreedySeeding(IndependentCascade):
+
+    def __init__(self, params):
+        super(IndependentCascadeGreedySeeding, self).__init__(params)
+
+    def spread(self, initially_infected):
+        dummy_contagion_model = IndependentCascade(copy.deepcopy(self.params))
+
+        dummy_contagion_model.missing_params_not_set = True
+        dummy_contagion_model.random_init(with_seed = False)
+
+        dummy_contagion_model.init_network_states(initially_infected)
+
+        if hasattr(self, 'isActivationModel'):
+            dummy_contagion_model.set_activation_functions()
+
+        all_nodes_states = list(
+            map(lambda node_pointer: 1.0 * dummy_contagion_model.params['network'].node[node_pointer]['state'],
+                dummy_contagion_model.params['network'].nodes()))
+        total_number_of_infected = 2 * np.sum(abs(np.asarray(all_nodes_states)))
+
+        time = 0
+        # Note: the assumption here is that the tau paramter indicates the cap of maximum spread, similar to edge query model
+        while (total_number_of_infected < dummy_contagion_model.params['tau']) \
+            and (not dummy_contagion_model.spread_stopped):
+            time += 1
+            dummy_contagion_model.outer_step()
+
+            all_nodes_states = list(
+                map(lambda node_pointer: 1.0 * dummy_contagion_model.params['network'].node[node_pointer]['state'],
+                    dummy_contagion_model.params['network'].nodes()))
+            total_number_of_infected = 2 * np.sum(abs(np.asarray(all_nodes_states)))
+            
+            if time > self.params['size'] * 10:
+                break 
+
+        del(dummy_contagion_model)
+        return total_number_of_infected
+
+    def sample_spread(self, initially_infected, sample_size):
+        sample_seeds = [initially_infected for sample_id in range(sample_size)]
+
+        if self.params['multiprocess_mg_sample']:
+            with Multipool(processes = self.params['num_mg_sample_cpus']) as pool:
+                sample_spreads = pool.map(self.spread, sample_seeds)
+        else:
+            sample_spreads = []
+            for initially_infected in sample_seeds:
+                sample_spreads.append(self.spread(initially_infected))
+
+        return np.average(sample_spreads)
+
+    def perform_next_iter(self, seeds, queue):
+        _, iter_flag, node = heapq.heappop(queue)
+
+        if iter_flag == len(seeds):
+            seeds.append(node)
+            print('seed', len(seeds), 'added')
+        else:
+            seeds_with_extra_node = copy.deepcopy(seeds) + [node]
+            new_negated_marginal_gain = (self.sample_spread(seeds, self.params['mg_sample_size'])
+                                        - self.sample_spread(seeds_with_extra_node, self.params['mg_sample_size']))
+            new_iter_flag = len(seeds)
+            heapq.heappush(queue, (new_negated_marginal_gain, new_iter_flag, node))
+
+    def seed(self):
+        queue = [(float('-inf'), -1, node) for node in self.params['network'].nodes()]
+        heapq.heapify(queue)
+        seeds = []
+
+        while len(seeds) < self.params['k']:
+            self.perform_next_iter(seeds, queue)
+
         return (seeds, None, None)
