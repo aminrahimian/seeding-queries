@@ -1457,4 +1457,4 @@ class IndependentCascadeGreedySeeding(IndependentCascade):
         while len(seeds) < self.params['k']:
             self.perform_next_iter(seeds, queue)
 
-        return seeds
+        return (seeds, None, None)
