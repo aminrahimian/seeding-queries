@@ -170,8 +170,8 @@ if model_id == '_vanilla IC_':
     alpha = 0.0
     gamma = 1.0
     delta = 0.0
-    beta = 0.1
-    k = 4
+    beta = 0.05
+    k = 1
 else:
     print('model_id is not valid')
     exit()
@@ -190,7 +190,7 @@ print('without checking the availability of samples or taking smaller ones:')
 
 print(network_id_list)
 
-network_id_list = ['MIT8']
+network_id_list = ['Penn94']
 
 try:
     if GENERATE_NET_LIST_FROM_AVAILABLE_SAMPLES == True:
