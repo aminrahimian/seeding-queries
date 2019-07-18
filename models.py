@@ -1419,10 +1419,8 @@ class IndependentCascadeGreedySeeding(IndependentCascade):
             if time > self.params['size'] * 10:
                 break 
 
-        spread = set(filter(lambda j : dummy_contagion_model.params['network'].node[j]['state'] != 0,
-                            dummy_contagion_model.params['network'].nodes()))
         del(dummy_contagion_model)
-        return spread
+        return total_number_of_infected
 
     def sample_spread(self, initially_infected, sample_size):
         sample_seeds = [initially_infected for sample_id in range(sample_size)]
