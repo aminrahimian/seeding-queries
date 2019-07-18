@@ -62,6 +62,7 @@ def analyze_cost_vs_performance(network_id):
                   + model_id + ' already exists')
             return
 
+    tau = 0.95 * network_size
     params_original = {
         'network': G,
         'original_network': G,
@@ -72,6 +73,7 @@ def analyze_cost_vs_performance(network_id):
         'alpha': alpha,
         'beta': beta,
         'gamma': gamma,
+        'tau': tau,
         'memory': memory,
         'rewire': False,
         'rewiring_mode': 'random_random',
