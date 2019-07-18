@@ -1427,8 +1427,13 @@ class IndependentCascadeGreedySeeding(IndependentCascade):
     def sample_spread(self, initially_infected, sample_size):
         sample_seeds = [initially_infected for sample_id in range(sample_size)]
 
-        with Multipool(processes = self.params['num_sample_cpus']) as pool:
-            sample_spreads = pool.map(self.spread, sample_seeds)
+        if self.params['multiprocess_sample_spread']:
+            with Multipool(processes = self.params['num_sample_cpus']) as pool:
+                sample_spreads = pool.map(self.spread, sample_seeds)
+        else:
+            sample_spreads = []
+            for initially_infected in sample_seeds:
+                sample_spreads.append(self.spread(initially_infected))
 
         return np.average(sample_spreads)
 
