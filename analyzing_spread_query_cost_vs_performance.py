@@ -23,11 +23,11 @@ MULTIPROCESS_SAMPLE = True
 
 size_of_dataset = 8
 
-sample_size = 50
+sample_size = 100
 
 num_dataset_cpus = 8
 
-num_sample_cpus = 5
+num_sample_cpus = 13
 
 CAP = 0.9
 
@@ -101,7 +101,8 @@ def analyze_cost_vs_performance(network_id):
 
     # Running seeding and spreading simulations
     spread_size_samples = []
-    query_cost_samples = list(np.logspace(start = 1.0, stop = np.log2(45), num = size_of_dataset, base = 2))
+    query_cost_samples = [2.0, 4.0, 5.0, 8.0, 12.0, 19.0, 29.0, 45.0]
+        #list(np.logspace(start = 1.0, stop = np.log2(45), num = size_of_dataset, base = 2))
     query_cost_samples = [np.ceil(cost) for cost in query_cost_samples]
 
     eps = 0.2
