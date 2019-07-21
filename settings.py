@@ -273,7 +273,7 @@ if 'SLURM_ARRAY_TASK_ID' in os.environ:
     print('SLURM_ARRAY_TASK_ID: ' + str(os.environ['SLURM_ARRAY_TASK_ID']))
     QUERY_COST_ID = int(os.environ['SLURM_ARRAY_TASK_ID']) - 1
     query_cost_id_list = [QUERY_COST_ID]
-    print('QUERY_COST_ID_LIST: ' + query_cost_id_list)
+    print('QUERY_COST_ID_LIST:', query_cost_id_list)
 
 # theory simulations settings:
 
