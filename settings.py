@@ -170,7 +170,7 @@ if model_id == '_vanilla IC_':
     alpha = 0.0
     gamma = 1.0
     delta = 0.0
-    beta = 0.05
+    beta = 0.01
     k = 2
 else:
     print('model_id is not valid')
@@ -259,12 +259,21 @@ except NameError:
     print('could not check for availability of samples or take smaller ones')
 
 # check for SLURM Job Array environmental variable:
+
+# if 'SLURM_ARRAY_TASK_ID' in os.environ:
+#     print('SLURM_ARRAY_TASK_ID: ' + str(os.environ['SLURM_ARRAY_TASK_ID']))
+#     JOB_NET_ID = int(os.environ['SLURM_ARRAY_TASK_ID']) - 1
+#     NET_ID = network_id_list[JOB_NET_ID]
+#     network_id_list = [NET_ID]
+#     print('SLURM_ARRAY_TASK_ID: ' + NET_ID)
+
+query_cost_list = [1.0]
+
 if 'SLURM_ARRAY_TASK_ID' in os.environ:
     print('SLURM_ARRAY_TASK_ID: ' + str(os.environ['SLURM_ARRAY_TASK_ID']))
-    JOB_NET_ID = int(os.environ['SLURM_ARRAY_TASK_ID']) - 1
-    NET_ID = network_id_list[JOB_NET_ID]
-    network_id_list = [NET_ID]
-    print('SLURM_ARRAY_TASK_ID: ' + NET_ID)
+    QUERY_COST = int(os.environ['SLURM_ARRAY_TASK_ID'])
+    query_cost_list = [QUERY_COST]
+    print('QUERY_COST_LIST: ' + query_cost_list)
 
 # theory simulations settings:
 
