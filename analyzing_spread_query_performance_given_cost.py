@@ -27,8 +27,10 @@ num_sample_cpus = 20
 
 CAP = 0.9
 
+query_costs = [2.0, 4.0, 5.0, 8.0, 12.0, 19.0, 29.0, 45.0]
+
         
-def analyze_cost_vs_performance(query_cost):
+def analyze_cost_vs_performance(query_cost_id):
     #  load in the network and extract preliminary data
     fh = open(edgelist_directory_address + network_group + network_id + '.txt', 'rb')
     G = NX.read_edgelist(fh, delimiter=DELIMITER)
@@ -64,6 +66,7 @@ def analyze_cost_vs_performance(query_cost):
     eps_prime = 2 * eps * (1 + a * (1 - eps))
     T = int (3 * (delta + np.log(2)) * (k+1) * np.log(network_size) / (eps * eps))
     tau = 0.9 * network_size
+    query_cost = query_costs[query_cost_id]
     rho = query_cost / k
 
     params_original = {
@@ -123,10 +126,10 @@ if __name__ == '__main__':
     if do_multiprocessing:
         with Multipool(processes=number_CPU) as pool:
 
-            pool.map(analyze_cost_vs_performance, query_cost_list)
+            pool.map(analyze_cost_vs_performance, query_cost_id_list)
 
     else:  # no multi-processing
         # do computations for the original networks:
 
-        for query_cost in query_cost_list:
-            analyze_cost_vs_performance(query_cost)
+        for query_cost_id in query_cost_id_list:
+            analyze_cost_vs_performance(query_cost_id)
