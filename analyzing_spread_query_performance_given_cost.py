@@ -21,7 +21,7 @@ CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
 MULTIPROCESS_SAMPLE = True
 
-sample_size = 100
+sample_size = 200
 
 num_sample_cpus = 20
 
