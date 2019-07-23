@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name="analyzing_spread_query_performance_given_cost"
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=20
+#SBATCH --cpus-per-task=28
 #SBATCH --mem-per-cpu=5G
 #SBATCH --partition=sched_mit_sloan_batch
 #SBATCH --time=4-00:00:00
-#SBATCH --array=1-8
+#SBATCH --array=1-5
 
 #SBATCH -o /home/sanzeed/seeding_queries/analyzing_spread_query_performance_given_cost.out
 #SBATCH -e /home/sanzeed/seeding_queries/analyzing_spread_query_performance_given_cost.err
