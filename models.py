@@ -1365,7 +1365,7 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
             sampled_spreads = self.query()
 
             for spread in sampled_spreads:
-                unique_nodes_discovered.add(spread)
+                unique_nodes_discovered.update(spread)
                 sum_of_spreads += len(spread)
 
             for j in range(len(sampled_spreads)):
