@@ -981,8 +981,8 @@ class ContagionModel(object):
         else:
             return (np.average(spread_size_samples), np.std(spread_size_samples), sum(spread < 10.0 for spread in spread_size_samples),
                     np.average(node_discovery_cost_samples), np.std(node_discovery_cost_samples),
-                    np.average(edge_discovery_cost_samples), np.std(edge_discovery_cost_samples))
-
+                    np.average(secondary_cost_samples), np.std(secondary_cost_samples))
+                    
     def outer_step(self):
         assert hasattr(self, 'classification_label'), 'classification_label not set'
         assert not self.missing_params_not_set, 'missing params are not set'
