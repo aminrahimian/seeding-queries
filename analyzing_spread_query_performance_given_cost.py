@@ -27,7 +27,7 @@ num_sample_cpus = 20
 
 CAP = 0.9
 
-query_costs = [2.0, 4.0, 5.0, 8.0, 12.0, 19.0, 29.0, 45.0]
+query_costs = [4.0, 8.0, 12.0, 16.0, 20.0]
 
         
 def analyze_cost_vs_performance(query_cost_id):

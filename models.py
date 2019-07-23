@@ -721,7 +721,7 @@ class ContagionModel(object):
         self.init_network()
 
         if with_seed:
-            seed_set, node_discovery_cost, edge_discovery_cost = self.seed()
+            seed_set, node_discovery_cost, secondary_cost = self.seed()
         else:
             seed_set = []
 
@@ -732,7 +732,7 @@ class ContagionModel(object):
         self.spread_stopped = False
 
         if with_seed:
-            return node_discovery_cost, edge_discovery_cost
+            return node_discovery_cost, secondary_cost
 
     def time_the_total_spread(self, cap=0.99,
                               get_time_series=False,
@@ -925,7 +925,7 @@ class ContagionModel(object):
 
     def sample_cost_vs_performance(self, sample_id, cap = 0.9):
         self.missing_params_not_set = True
-        node_discovery_cost, edge_discovery_cost = self.random_init()
+        node_discovery_cost, secondary_cost = self.random_init()
 
         time = 0
 
@@ -950,21 +950,21 @@ class ContagionModel(object):
                 break
 
         del(all_nodes_states)
-        return total_number_of_infected, node_discovery_cost, edge_discovery_cost
+        return total_number_of_infected, node_discovery_cost, secondary_cost
 
     def get_cost_vs_performance(self, cap=0.9, sample_size = 30, multiprocess = True, num_sample_cpus = 10):
         spread_size_samples = []
         node_discovery_cost_samples = []
-        edge_discovery_cost_samples = []
+        secondary_cost_samples = []
 
         if not multiprocess:
             for i in range(sample_size):
-                spread_size_sample, node_discovery_cost_sample, edge_discovery_cost_sample \
+                spread_size_sample, node_discovery_cost_sample, secondary_cost_sample \
                     = self.sample_cost_vs_performance(sample_id = i, cap = cap)
             
             spread_size_samples.append(spread_size_sample)
             node_discovery_cost_samples.append(node_discovery_cost_sample)
-            edge_discovery_cost_samples.append(edge_discovery_cost_sample)
+            secondary_cost_samples.append(secondary_cost_sample)
         
         else:
             partial_sample_cost_vs_performance = partial(self.sample_cost_vs_performance,
@@ -974,7 +974,7 @@ class ContagionModel(object):
 
             spread_size_samples = [spread_data[i][0] for i in range(sample_size)]
             node_discovery_cost_samples = [spread_data[i][1] for i in range(sample_size)]
-            edge_discovery_cost_samples = [spread_data[i][2] for i in range(sample_size)]
+            secondary_cost_samples = [spread_data[i][2] for i in range(sample_size)]
 
         if node_discovery_cost_samples[0] is None:
             return (np.average(spread_size_samples), np.std(spread_size_samples), sum(spread < 10.0 for spread in spread_size_samples))
@@ -1358,9 +1358,15 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
     def seed(self):
         candidates = set(list(self.params['network'].nodes()))
         seeds = []
+        unique_nodes_discovered = set()
+        sum_of_spreads = 0
 
         for i in range(self.params['k']):
             sampled_spreads = self.query()
+
+            for spread in sampled_spreads:
+                unique_nodes_discovered.add(spread)
+                sum_of_spreads += len(spread)
 
             for j in range(len(sampled_spreads)):
                 if sampled_spreads[j].intersection(set(seeds)):
@@ -1380,7 +1386,7 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
             del(sampled_spreads)
 
         del(candidates)
-        return (seeds, None, None)
+        return (seeds, len(unique_nodes_discovered), sum_of_spreads)
 
 
 class IndependentCascadeGreedySeeding(IndependentCascade):
