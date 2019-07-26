@@ -23,11 +23,11 @@ MULTIPROCESS_SAMPLE = True
 
 sample_size = 500
 
-num_sample_cpus = 28
+num_sample_cpus = 48
 
 CAP = 0.9
 
-query_costs = [8.0, 16.0]
+query_costs = [2, 4, 6, 8, 10, 14, 20, 28, 40, 60]
 
         
 def analyze_cost_vs_performance(query_cost_id):
