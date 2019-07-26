@@ -112,7 +112,7 @@ def analyze_cost_vs_performance(network_id):
             return
 
     # Running seeding and spreading simulations
-    rhos = [0.02*j for j in range(1, size_of_dataset + 1)]
+    rhos = [0.002*j for j in range(1, size_of_dataset + 1)]
     spread_size_samples = []
     node_discovery_cost_samples = []
     edge_discovery_cost_samples = []
