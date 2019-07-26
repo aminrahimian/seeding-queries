@@ -27,7 +27,7 @@ num_sample_cpus = 28
 
 CAP = 0.9
 
-query_costs = [4.0, 8.0, 12.0, 16.0, 20.0]
+query_costs = [8.0, 16.0]
 
         
 def analyze_cost_vs_performance(query_cost_id):
@@ -107,17 +107,16 @@ def analyze_cost_vs_performance(query_cost_id):
               '================================================')
 
     if save_computations:
-        seeding_model_folder = "/spread_query/Penn94/"
+        seeding_model_folder = "/spread_query/"
         data_dump_folder = (spreading_pickled_samples_directory_address
-                                                + 'k_' + str(k)
                                                 + seeding_model_folder)
         os.makedirs(os.path.dirname(data_dump_folder), exist_ok = True)
 
         pickle.dump(spread_size_sample, open(data_dump_folder
                                               + 'spread_size_samples_'
-                                              + network_group + network_id
+                                              + 'k_' + str(k) + '_'
                                               + '_query_cost_' + str(query_cost)
-                                              + model_id + '.pkl', 'wb'))
+                                              + '.pkl', 'wb'))
 
 if __name__ == '__main__':
 
