@@ -2,7 +2,7 @@
 #SBATCH --job-name="k10edge"
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=24
-#SBATCH --mem-per-cpu=4G
+#SBATCH --mem-per-cpu=20G
 #SBATCH --partition=sched_mit_sloan_interactive
 #SBATCH --time=4-00:00:00
 
