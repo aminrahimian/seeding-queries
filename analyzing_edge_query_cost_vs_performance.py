@@ -21,13 +21,13 @@ MULTIPROCESS_DATASET = True
 
 MULTIPROCESS_SAMPLE = True
 
-size_of_dataset = 2
+size_of_dataset = 5
 
-sample_size = 2
+sample_size = 500
 
-num_dataset_cpus = 2
+num_dataset_cpus = 4
 
-num_sample_cpus = 2
+num_sample_cpus = 6
 
 CAP = 0.9
 
