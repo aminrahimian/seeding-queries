@@ -21,13 +21,13 @@ MULTIPROCESS_DATASET = True
 
 MULTIPROCESS_SAMPLE = True
 
-size_of_dataset = 5
+size_of_dataset = 10
 
 sample_size = 500
 
-num_dataset_cpus = 4
+num_dataset_cpus = 5
 
-num_sample_cpus = 6
+num_sample_cpus = 7
 
 CAP = 0.9
 
@@ -112,7 +112,7 @@ def analyze_cost_vs_performance(network_id):
             return
 
     # Running seeding and spreading simulations
-    rhos = [0.002*j for j in range(1, size_of_dataset + 1)]
+    rhos = [0.001 + 0.0005 *j for j in range(0, size_of_dataset)]
     spread_size_samples = []
     node_discovery_cost_samples = []
     edge_discovery_cost_samples = []
