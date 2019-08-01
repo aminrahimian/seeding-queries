@@ -29,6 +29,7 @@ CAP = 0.9
 
 rhos = [0.01, 0.05,0.1]
 
+rho_id_list = query_cost_id_list 
         
 def analyze_cost_vs_performance(rho_id):
     #  load in the network and extract preliminary data
