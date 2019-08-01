@@ -9,9 +9,9 @@ VERBOSE = True
 
 CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
-sample_size = 2
+sample_size = 100
 
-num_sample_cpus = 2
+num_sample_cpus = 28
 
 CAP = 0.9
 
