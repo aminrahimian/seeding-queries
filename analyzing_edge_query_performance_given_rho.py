@@ -17,8 +17,6 @@ VERBOSE = True
 
 CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
-MULTIPROCESS_DATASET = True
-
 MULTIPROCESS_SAMPLE = True
 
 network_id = 'Penn94'
@@ -29,8 +27,9 @@ num_sample_cpus = 28
 
 CAP = 0.9
 
-rhos = [0.001, 0.0015, 0.002, 0.0025, 0.003, 0.0035, 0.004, 0.0045, 0.005, 0.0055]
+rhos = [0.01, 0.05,0.1]
 
+rho_id_list = query_cost_id_list 
         
 def analyze_cost_vs_performance(rho_id):
     #  load in the network and extract preliminary data
