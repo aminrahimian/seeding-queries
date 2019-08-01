@@ -6,7 +6,7 @@ import heapq
 
 from functools import partial
 
-from Multipool import Multipool
+from multipool import Multipool
 
 TRACK_TIME_SINCE_VARIABLES = True
 
@@ -1170,7 +1170,7 @@ class IndependentCascadeRandomSeeding(IndependentCascade):
 
     def seed(self):
         k_random_node_indices = self.query()
-        return k_random_node_indices
+        return k_random_node_indices, None, None
 
 
 class IndependentCascadeEdgeQuerySeeding(IndependentCascade):

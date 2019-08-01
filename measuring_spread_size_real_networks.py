@@ -9,7 +9,9 @@ VERBOSE = True
 
 CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
-size_of_dataset = 10
+sample_size = 2
+
+num_sample_cpus = 2
 
 CAP = 0.9
 
@@ -63,29 +65,24 @@ def measure_spread_size(network_id):
     else:
         print('model_id is not valid')
         exit()
-    speed_original, std_original, _, _, speed_samples_original, \
-        infection_size_original, infection_size_std_original, _, _, infection_size_samples_original = \
-        dynamics.avg_speed_of_spread(
-            dataset_size=size_of_dataset,
-            cap=CAP,
-            mode='max')
+    spread_results = dynamics.get_cost_vs_performance(cap=CAP,
+                                                      sample_size = sample_size,
+                                                      multiprocess = True, 
+                                                      num_sample_cpus = num_sample_cpus)
     if VERBOSE:
-        print('mean time to spread:', speed_original, std_original)
-        print('mean infection_size:', infection_size_original, infection_size_std_original)
-        print('spread time samples:', speed_samples_original)
-        print('infection size samples:', infection_size_samples_original)
+        print('================================================', "\n",
+              'spread size: ', spread_results[0], "\n",
+              '================================================')
 
     if save_computations:
+        seeding_model_folder = "/random/"
+        data_dump_folder = (spreading_pickled_samples_directory_address
+                                                + seeding_model_folder)
+        os.makedirs(os.path.dirname(data_dump_folder), exist_ok = True)
 
-        pickle.dump(speed_samples_original, open(spreading_pickled_samples_directory_address
-                                                 + 'speed_samples_original_'
-                                                 + network_group + network_id
-                                                 + model_id + '.pkl', 'wb'))
-
-        pickle.dump(infection_size_samples_original, open(spreading_pickled_samples_directory_address
-                                                          + 'infection_size_original_'
-                                                          + network_group + network_id
-                                                          + model_id + '.pkl', 'wb'))
+        pickle.dump(spread_results, open(data_dump_folder
+                                         + 'spread_results_'
+                                         + 'k_' + str(k) + '_'  + '.pkl', 'wb'))
 
 
 if __name__ == '__main__':

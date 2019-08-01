@@ -171,7 +171,7 @@ if model_id == '_vanilla IC_':
     gamma = 1.0
     delta = 0.0
     beta = 0.01
-    k = 4
+    k = 2
 else:
     print('model_id is not valid')
     exit()
