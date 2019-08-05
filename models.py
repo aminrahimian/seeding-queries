@@ -1173,6 +1173,19 @@ class IndependentCascadeRandomSeeding(IndependentCascade):
         return k_random_node_indices, None, None
 
 
+class IndependentCascadeNominationSeeding(IndependentCascade):
+
+    def __init__(self, params):
+        super(IndependentCascadeNominationSeeding, self).__init__(params)
+        self.classification_label = SIMPLE
+
+    def query(self):
+        pass
+
+    def seed(self):
+        pass
+        
+
 class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
 
     def __init__(self, params):

@@ -116,6 +116,7 @@ def analyze_cost_vs_performance(query_cost_id):
                                               + 'spread_size_samples_'
                                               + 'k_' + str(k) + '_'
                                               + '_query_cost_' + str(query_cost)
+                                              + '_sample_size_' + str(sample_size)
                                               + '.pkl', 'wb'))
 
 if __name__ == '__main__':
