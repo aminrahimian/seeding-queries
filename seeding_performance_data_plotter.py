@@ -51,7 +51,7 @@ def dump_seeding_performance_plot(data_type, seeding_model, external_list_of_k =
         plt.errorbar(x, y, iv, color = colors[k], label = 'k=' + str(k))
 
     plt.xlabel('Query cost')  
-    plt.ylabel('Infection_size')  
+    plt.ylabel('Infection size')  
     plt.legend(fontsize = 'large')
 
     fig.savefig(plot_folder + seeding_model + '_seeding_plot_' + 'k_' + str(list_of_k) + '.pdf',
