@@ -43,7 +43,9 @@ def natural_keys(text):
 
 
 # real world networks simulation settings:
-network_group = 'chami_union_edgelist_'
+network_group = 'fb100_edgelist_'
+# 'banerjee_combined_edgelist_'
+#'chami_union_edgelist_'
 # 'chami_union_edgelist_'
 # 'fb100_edgelist_'
 # 'cai_edgelist_'
@@ -102,7 +104,7 @@ elif network_group == 'fb100_edgelist_':
     TAKE_SMALLEST_N = True
 
     if TAKE_SMALLEST_N:
-        SMALLEST_N = 40
+        SMALLEST_N = 1
 
 edgelist_directory_address = root_data_address + 'edgelists/'
 
@@ -168,7 +170,7 @@ if model_id == '_vanilla IC_':
     alpha = 0.0
     gamma = 1.0
     delta = 0.0
-    beta = 0.2
+    beta = 0.01
     k = 2
 else:
     print('model_id is not valid')
@@ -187,6 +189,8 @@ network_id_list.sort(key=natural_keys)
 print('without checking the availability of samples or taking smaller ones:')
 
 print(network_id_list)
+
+network_id_list = ['Penn94']
 
 try:
     if GENERATE_NET_LIST_FROM_AVAILABLE_SAMPLES == True:
@@ -248,17 +252,28 @@ try:
 
         print(network_id_list)
 
+
+
 except NameError:
 
     print('could not check for availability of samples or take smaller ones')
 
 # check for SLURM Job Array environmental variable:
+
+# if 'SLURM_ARRAY_TASK_ID' in os.environ:
+#     print('SLURM_ARRAY_TASK_ID: ' + str(os.environ['SLURM_ARRAY_TASK_ID']))
+#     JOB_NET_ID = int(os.environ['SLURM_ARRAY_TASK_ID']) - 1
+#     NET_ID = network_id_list[JOB_NET_ID]
+#     network_id_list = [NET_ID]
+#     print('SLURM_ARRAY_TASK_ID: ' + NET_ID)
+
+query_cost_id_list = []
+
 if 'SLURM_ARRAY_TASK_ID' in os.environ:
     print('SLURM_ARRAY_TASK_ID: ' + str(os.environ['SLURM_ARRAY_TASK_ID']))
-    JOB_NET_ID = int(os.environ['SLURM_ARRAY_TASK_ID']) - 1
-    NET_ID = network_id_list[JOB_NET_ID]
-    network_id_list = [NET_ID]
-    print('SLURM_ARRAY_TASK_ID: ' + NET_ID)
+    QUERY_COST_ID = int(os.environ['SLURM_ARRAY_TASK_ID']) - 1
+    query_cost_id_list = [QUERY_COST_ID]
+    print('QUERY_COST_ID_LIST:', query_cost_id_list)
 
 # theory simulations settings:
 
@@ -298,7 +313,7 @@ except OSError as e:
 #
 # for computations:
 do_computations = True
-do_multiprocessing = True
+do_multiprocessing = False
 save_computations = True
 load_computations = False
 do_plots = False
@@ -391,7 +406,7 @@ if do_multiprocessing:
     if 'SLURM_ARRAY_TASK_ID' in os.environ:
         number_CPU = 3
     else:
-        number_CPU = 40
+        number_CPU = 20
 
 
 def combine(list_of_names,output_name):

@@ -1,6 +1,12 @@
 from settings import *
 import gc
 import copy
+import itertools
+import heapq
+
+from functools import partial
+
+from Multipool import Multipool
 
 TRACK_TIME_SINCE_VARIABLES = True
 
@@ -228,7 +234,6 @@ def add_edges(G, number_of_edges_to_be_added=10, mode='random', seed=None):
     assert type(G) is NX.classes.graph.Graph, "input should be a NetworkX graph object"
 
     fat_network = copy.deepcopy(G)
-
     unformed_edges = list(NX.non_edges(fat_network))
 
     if len(unformed_edges) < number_of_edges_to_be_added:
@@ -553,7 +558,7 @@ class ContagionModel(object):
 
             self.params['network'] = fattened_network
 
-        self.node_list = list(self.params['network'])  # used for indexing nodes in cases where
+        self.node_list = sorted(self.params['network'].nodes())  # used for indexing nodes in cases where
         # node attributes are available in a list. A typical application is as follows: self.node_list.index(i)
         # for i in self.params['network'].nodes():
         # If your node data is not needed, it is simpler and equivalent to use the expression for n in G, or list(G).
@@ -601,7 +606,8 @@ class ContagionModel(object):
         # complex contagion computations by shortening the loop over exposed agents.
 
         self.params['initial_states'] = 1.0 * np.zeros(self.params['size'])
-        self.params['initial_states'][initially_infected_node_indexes] = infected * active
+        for node in initially_infected_node_indexes:
+            self.params['initial_states'][self.node_list.index(node)] = infected * active
         # all nodes are initially active by default
         self.params['initial_states'] = list(self.params['initial_states'])
 
@@ -661,7 +667,7 @@ class ContagionModel(object):
         self.updated_list_of_exposed_agents = []
         self.updated_list_of_most_recent_activations = []
 
-    def random_init(self):
+    def random_init(self, with_seed = True):
         """
         the parameters that are provided when the class is being initialized are treated as fixed. The missing parameters
         are set randomly. In an inference framework the distributions that determine the random draws are priors over
@@ -714,13 +720,19 @@ class ContagionModel(object):
 
         self.init_network()
 
-        seed_set = self.seed()
+        if with_seed:
+            seed_set, node_discovery_cost, secondary_cost = self.seed()
+        else:
+            seed_set = []
 
         self.init_network_states(seed_set)
 
         self.missing_params_not_set = False
 
         self.spread_stopped = False
+
+        if with_seed:
+            return node_discovery_cost, secondary_cost
 
     def time_the_total_spread(self, cap=0.99,
                               get_time_series=False,
@@ -911,6 +923,66 @@ class ContagionModel(object):
         return avg_speed, speed_std, speed_max, speed_min, speed_samples, \
                avg_infection_size, infection_size_std, infection_size_max, infection_size_min, infection_size_samples
 
+    def sample_cost_vs_performance(self, sample_id, cap = 0.9):
+        self.missing_params_not_set = True
+        node_discovery_cost, secondary_cost = self.random_init()
+
+        time = 0
+
+        if hasattr(self, 'isActivationModel'):
+            self.set_activation_functions()
+
+        all_nodes_states = list(
+            map(lambda node_pointer: 1.0 * self.params['network'].node[node_pointer]['state'],
+                self.params['network'].nodes()))
+        total_number_of_infected = 2 * np.sum(abs(np.asarray(all_nodes_states)))
+
+        while (total_number_of_infected < cap * self.params['size']) and (not self.spread_stopped):
+            self.outer_step()
+            time += 1
+            all_nodes_states = list(
+                map(lambda node_pointer: 1.0 * self.params['network'].node[node_pointer]['state'],
+                    self.params['network'].nodes()))
+            total_number_of_infected = 2 * np.sum(abs(np.asarray(all_nodes_states)))
+            if time > self.params['size'] * 10:
+                time = float('Inf')
+                print('It is taking too long (10x size) to spread totally.')
+                break
+
+        del(all_nodes_states)
+        return total_number_of_infected, node_discovery_cost, secondary_cost
+
+    def get_cost_vs_performance(self, cap=0.9, sample_size = 30, multiprocess = True, num_sample_cpus = 10):
+        spread_size_samples = []
+        node_discovery_cost_samples = []
+        secondary_cost_samples = []
+
+        if not multiprocess:
+            for i in range(sample_size):
+                spread_size_sample, node_discovery_cost_sample, secondary_cost_sample \
+                    = self.sample_cost_vs_performance(sample_id = i, cap = cap)
+            
+            spread_size_samples.append(spread_size_sample)
+            node_discovery_cost_samples.append(node_discovery_cost_sample)
+            secondary_cost_samples.append(secondary_cost_sample)
+        
+        else:
+            partial_sample_cost_vs_performance = partial(self.sample_cost_vs_performance,
+                                                         cap = cap)
+            with Multipool(processes = num_sample_cpus) as pool:
+                spread_data = pool.map(partial_sample_cost_vs_performance, list(range(sample_size)))
+
+            spread_size_samples = [spread_data[i][0] for i in range(sample_size)]
+            node_discovery_cost_samples = [spread_data[i][1] for i in range(sample_size)]
+            secondary_cost_samples = [spread_data[i][2] for i in range(sample_size)]
+
+        if node_discovery_cost_samples[0] is None:
+            return (np.average(spread_size_samples), np.std(spread_size_samples), sum(spread < 10.0 for spread in spread_size_samples))
+        else:
+            return (np.average(spread_size_samples), np.std(spread_size_samples), sum(spread < 10.0 for spread in spread_size_samples),
+                    np.average(node_discovery_cost_samples), np.std(node_discovery_cost_samples),
+                    np.average(secondary_cost_samples), np.std(secondary_cost_samples))
+                    
     def outer_step(self):
         assert hasattr(self, 'classification_label'), 'classification_label not set'
         assert not self.missing_params_not_set, 'missing params are not set'
@@ -941,41 +1013,7 @@ class ContagionModel(object):
         pass
 
 
-class RandomSeeding(ContagionModel):
-
-    def __init__(self, params):
-        super(RandomSeeding, self).__init__(params)
-        self.classification_label = SIMPLE  # or COMPLEX
-        # set other model specific flags and handles here
-
-    def query(self):
-        """
-        queries the graph structure
-        """
-
-        assert self.network_initialized, "cannot query the network structure if it is not initialized"
-
-        assert not self.states_initialized, "states cannot be initialized before queries"
-
-        if 'k' in self.fixed_params:
-            self.params['k'] = self.fixed_params['k']
-        else:
-            self.params['k'] = 2
-            print('warning: k was not provided, set to 2')
-
-        k_random_node_indices = np.random.choice(range(self.params['size']),
-                                                 self.params['k'],
-                                                 replace=False)
-
-        return k_random_node_indices
-
-    def seed(self):
-        k_random_node_indices = self.query()
-        seed_set = k_random_node_indices
-        return seed_set
-
-
-class IndependentCascadeRandomSeeding(RandomSeeding):
+class IndependentCascade(ContagionModel):
     """
     Implements an independent cascade model. Each infected neighbor has an independent probability beta of passing on her
     infection, as long as her infection has occurred within the past mem = 1 time steps.
@@ -987,7 +1025,7 @@ class IndependentCascadeRandomSeeding(RandomSeeding):
     """
 
     def __init__(self, params):
-        super(IndependentCascadeRandomSeeding, self).__init__(params)
+        super(IndependentCascade, self).__init__(params)
         self.classification_label = SIMPLE
 
         assert TRACK_TIME_SINCE_VARIABLES, "we need the time_since_variables for the IndependentCascade model"
@@ -999,12 +1037,10 @@ class IndependentCascadeRandomSeeding(RandomSeeding):
         current_network = copy.deepcopy(self.params['network'])
 
         for i in current_network.nodes():
-
             # current_network.node[i]['state'] can either be susceptible (0)
             # or active infected (0.5) or inactive infected (-0.5)
 
             # transition from susceptible to active infected:
-
             if current_network.node[i]['state'] == susceptible:
                 assert self.params['network'].node[i]['time_since_infection'] == 0 and \
                        self.params['network'].node[i]['time_since_activation'] == 0, \
@@ -1019,7 +1055,6 @@ class IndependentCascadeRandomSeeding(RandomSeeding):
                         if RD.random() < self.params['beta']:
 
                             self.params['network'].node[i]['state'] = infected * active
-
                             SOMETHING_HAPPENED = True
 
                             for k in self.params['network'].neighbors(i):
@@ -1031,7 +1066,6 @@ class IndependentCascadeRandomSeeding(RandomSeeding):
                 # in all the below cases the node is in infected active or infected inactive state.
 
             # transition from active or inactive infected to susceptible:
-
             elif RD.random() < self.params['delta']:
                 assert 2 * abs(current_network.node[i]['state']) == infected, \
                     "error: node states are mishandled"
@@ -1107,10 +1141,12 @@ class IndependentCascadeRandomSeeding(RandomSeeding):
                 self.spread_stopped = True
 
 
-class NewSeeding(ContagionModel):
+class IndependentCascadeRandomSeeding(IndependentCascade):
 
     def __init__(self, params):
-        super(NewSeeding, self).__init__(params)
+        super(IndependentCascadeRandomSeeding, self).__init__(params)
+        self.classification_label = SIMPLE  # or COMPLEX
+        # set other model specific flags and handles here
 
     def query(self):
         """
@@ -1118,32 +1154,325 @@ class NewSeeding(ContagionModel):
         """
 
         assert self.network_initialized, "cannot query the network structure if it is not initialized"
-
         assert not self.states_initialized, "states cannot be initialized before queries"
 
+        if 'k' in self.fixed_params:
+            self.params['k'] = self.fixed_params['k']
+        else:
+            self.params['k'] = 2
+            print('warning: k was not provided, set to 2')
+
+        k_random_node_indices = np.random.choice(list(self.params['network'].nodes()),
+                                                 self.params['k'],
+                                                 replace=False)
+
+        return k_random_node_indices
+
+    def seed(self):
+        k_random_node_indices = self.query()
+        return k_random_node_indices, None, None
+
+
+class IndependentCascadeNominationSeeding(IndependentCascade):
+
+    def __init__(self, params):
+        super(IndependentCascadeNominationSeeding, self).__init__(params)
+        self.classification_label = SIMPLE
+
+    def query(self):
         pass
 
     def seed(self):
-        self.query()
-        # compute the seed set
-        seed_set = [] # initially_infected_node_indexes
         pass
+        
 
-
-class NewSpreadModelNewSeeding(NewSeeding):
+class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
 
     def __init__(self, params):
-        super(NewSeeding, self).__init__(params)
+        super(IndependentCascadeEdgeQuerySeeding, self).__init__(params)
 
-    def step(self):
+        #Question: initiate probe parameters here, calculate them from epsilon?
 
-        current_network = copy.deepcopy(self.params['network'])
+    def reveal_nbhr(self, node):
+        """
+        Reveal a neighbor of the given node
+        """
 
-        for i in current_network.nodes():
-            # set node states according to the model
-            pass
-        # makes sure time_since_infection and number_of_infected_neighbors are properly updated
-        self.time_since_infection_is_updated = True
-        self.number_of_active_infected_neighbors_is_updated = True
+        assert self.network_initialized, "cannot query the network structure if it is not initialized"
+        assert not self.states_initialized, "states cannot be initialized before queries"
 
-        del current_network
+        reveal_neighbor = np.random.choice([True, False], 
+                                           1, 
+                                           False, 
+                                           [self.params['beta'], 1 - self.params['beta']])
+
+        return np.random.choice(list(self.params['network'].neighbors(node)), 1)[0] if reveal_neighbor else None
+
+    def probe(self, sampled_nodes):
+        """
+        probes the graph structure for edge query seeding
+        """
+        # Assumption: probe parameters rho, T and tau are assumed to be provided on init
+
+        probed_subgraphs = []
+        discovered_nodes = set()
+        discovered_edges = set()
+
+        for i in range(self.params['T']):
+            probed_subgraph = []
+
+            candidate_nodes = set(sampled_nodes)
+            predecessor_table = {candidate_node : None for candidate_node in candidate_nodes}
+
+            while len(candidate_nodes) != 0:
+                candidate_node = candidate_nodes.pop()
+
+                discovered_nodes.add(candidate_node)
+                next_candidate_node = self.reveal_nbhr(candidate_node)
+
+                if next_candidate_node is not None:
+                    candidate_nodes.add(next_candidate_node)
+                    predecessor_table[next_candidate_node] = candidate_node
+
+                    if (candidate_node, next_candidate_node) not in discovered_edges \
+                        and (next_candidate_node, candidate_node) not in discovered_edges:
+                        discovered_edges.add((candidate_node, next_candidate_node))
+
+                in_new_component = True
+                for component in probed_subgraph:
+                    if predecessor_table[candidate_node] in component:
+                        component.add(candidate_node)
+                        in_new_component = False
+                        if len(component) > self.params['tau']:
+                            candidate_nodes.difference_update(component)
+
+                if in_new_component:
+                    probed_subgraph.append({candidate_node})
+
+            probed_subgraphs.append(probed_subgraph)
+            del(candidate_nodes)
+            del(predecessor_table)
+
+        node_discovery_cost = len(discovered_nodes)
+        edge_discovery_cost = len(discovered_edges)
+        del(sampled_nodes)
+        del(discovered_nodes)
+        del(discovered_edges)
+        return probed_subgraphs, node_discovery_cost, edge_discovery_cost
+
+    def query(self):
+        sample_size = int(self.params['size'] * self.params['rho'])
+        sampled_nodes = np.random.choice(list(self.params['network'].nodes()),
+                                         sample_size,
+                                         replace = False)
+        probed_subgraphs, node_discovery_cost, edge_discovery_cost = self.probe(sampled_nodes)
+
+        all_components = list(itertools.chain.from_iterable(probed_subgraphs))
+        sampled_nodes_set = set(sampled_nodes)
+        component_scores = [len(component.intersection(sampled_nodes_set)) for component in all_components]
+
+        del(sample_size)
+        del(sampled_nodes)
+        del(probed_subgraphs)
+        del(sampled_nodes_set)
+        return (all_components, component_scores, node_discovery_cost, edge_discovery_cost)
+    
+    def seed(self):
+        all_components, component_scores, node_discovery_cost, edge_discovery_cost = self.query()
+
+        candidate_sample_size = int((self.params['size'] / self.params['k']) * np.log(1 / self.params['eps_prime']))
+        search_set = set(self.params['network'].nodes())
+        seed_set = []
+
+        for i in range(self.params['k']):
+            candidate_sample = np.random.choice(list(search_set), 
+                                                size = candidate_sample_size,
+                                                replace = False)
+
+            next_seed = None
+            max_gain = -1
+            for candidate in candidate_sample:
+                candidate_score = 0
+                for i in range(len(all_components)):
+                    if candidate in all_components[i]:
+                        candidate_score += component_scores[i]
+
+                if candidate_score > max_gain:
+                    next_seed = candidate
+                    max_gain = candidate_score
+
+            if next_seed is not None:
+                seed_set.append(next_seed)
+                search_set.remove(next_seed)
+                for i in range(len(all_components)):
+                    if next_seed in all_components[i]:
+                        component_scores[i] = 0
+
+        del(all_components)
+        del(component_scores)
+        del(candidate_sample_size)
+        del(search_set)
+
+        return (seed_set, node_discovery_cost, edge_discovery_cost)
+
+
+class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
+
+    def __init__(self, params):
+        super(IndependentCascadeSpreadQuerySeeding, self).__init__(params)
+
+    def spread(self, i):
+        dummy_contagion_model = IndependentCascade(copy.deepcopy(self.params))
+
+        dummy_contagion_model.missing_params_not_set = True
+        dummy_contagion_model.random_init(with_seed = False)
+
+        dummy_contagion_model.init_network_states([i])
+
+        if hasattr(self, 'isActivationModel'):
+            dummy_contagion_model.set_activation_functions()
+
+        all_nodes_states = list(
+            map(lambda node_pointer: 1.0 * dummy_contagion_model.params['network'].node[node_pointer]['state'],
+                dummy_contagion_model.params['network'].nodes()))
+        total_number_of_infected = 2 * np.sum(abs(np.asarray(all_nodes_states)))
+
+        time = 0
+        # Note: the assumption here is that the tau paramter indicates the cap of maximum spread, similar to edge query model
+        while (total_number_of_infected < dummy_contagion_model.params['tau']) \
+            and (not dummy_contagion_model.spread_stopped):
+            time += 1
+            dummy_contagion_model.outer_step()
+
+            all_nodes_states = list(
+                map(lambda node_pointer: 1.0 * dummy_contagion_model.params['network'].node[node_pointer]['state'],
+                    dummy_contagion_model.params['network'].nodes()))
+            total_number_of_infected = 2 * np.sum(abs(np.asarray(all_nodes_states)))
+            
+            if time > self.params['size'] * 10:
+                break 
+
+        spread = set(filter(lambda j : dummy_contagion_model.params['network'].node[j]['state'] != 0,
+                            dummy_contagion_model.params['network'].nodes()))
+        del(dummy_contagion_model)
+        return spread
+
+    def query(self):
+        sampled_spreads = []
+        sampled_nodes = np.random.choice(list(self.params['network'].nodes()),
+                                         size = int(self.params['rho']),
+                                         replace = False)
+        
+        for node in sampled_nodes:
+            sampled_spreads.append(self.spread(node))
+
+        return sampled_spreads
+
+    def seed(self):
+        candidates = set(list(self.params['network'].nodes()))
+        seeds = []
+        unique_nodes_discovered = set()
+        sum_of_spreads = 0
+
+        for i in range(self.params['k']):
+            sampled_spreads = self.query()
+
+            for spread in sampled_spreads:
+                unique_nodes_discovered.update(spread)
+                sum_of_spreads += len(spread)
+
+            for j in range(len(sampled_spreads)):
+                if sampled_spreads[j].intersection(set(seeds)):
+                    sampled_spreads[j] = set()
+
+            new_seed = None
+            max_score = 0
+            for candidate in candidates:
+                candidate_score = np.sum([candidate in spread for spread in sampled_spreads])
+                if candidate_score >= max_score:
+                    new_seed = candidate
+                    max_score = candidate_score
+
+            if new_seed is not None:
+                seeds.append(new_seed)
+                candidates.remove(new_seed)
+            del(sampled_spreads)
+
+        del(candidates)
+        return (seeds, len(unique_nodes_discovered), sum_of_spreads)
+
+
+class IndependentCascadeGreedySeeding(IndependentCascade):
+
+    def __init__(self, params):
+        super(IndependentCascadeGreedySeeding, self).__init__(params)
+
+    def spread(self, initially_infected):
+        dummy_contagion_model = IndependentCascade(copy.deepcopy(self.params))
+
+        dummy_contagion_model.missing_params_not_set = True
+        dummy_contagion_model.random_init(with_seed = False)
+
+        dummy_contagion_model.init_network_states(initially_infected)
+
+        if hasattr(self, 'isActivationModel'):
+            dummy_contagion_model.set_activation_functions()
+
+        all_nodes_states = list(
+            map(lambda node_pointer: 1.0 * dummy_contagion_model.params['network'].node[node_pointer]['state'],
+                dummy_contagion_model.params['network'].nodes()))
+        total_number_of_infected = 2 * np.sum(abs(np.asarray(all_nodes_states)))
+
+        time = 0
+        # Note: the assumption here is that the tau paramter indicates the cap of maximum spread, similar to edge query model
+        while (total_number_of_infected < dummy_contagion_model.params['tau']) \
+            and (not dummy_contagion_model.spread_stopped):
+            time += 1
+            dummy_contagion_model.outer_step()
+
+            all_nodes_states = list(
+                map(lambda node_pointer: 1.0 * dummy_contagion_model.params['network'].node[node_pointer]['state'],
+                    dummy_contagion_model.params['network'].nodes()))
+            total_number_of_infected = 2 * np.sum(abs(np.asarray(all_nodes_states)))
+            
+            if time > self.params['size'] * 10:
+                break 
+
+        del(dummy_contagion_model)
+        return total_number_of_infected
+
+    def sample_spread(self, initially_infected, sample_size):
+        sample_seeds = [initially_infected for sample_id in range(sample_size)]
+
+        if self.params['multiprocess_mg_sample']:
+            with Multipool(processes = self.params['num_mg_sample_cpus']) as pool:
+                sample_spreads = pool.map(self.spread, sample_seeds)
+        else:
+            sample_spreads = []
+            for initially_infected in sample_seeds:
+                sample_spreads.append(self.spread(initially_infected))
+
+        return np.average(sample_spreads)
+
+    def perform_next_iter(self, seeds, queue):
+        _, iter_flag, node = heapq.heappop(queue)
+
+        if iter_flag == len(seeds):
+            seeds.append(node)
+            print('seed', len(seeds), 'added')
+        else:
+            seeds_with_extra_node = copy.deepcopy(seeds) + [node]
+            new_negated_marginal_gain = (self.sample_spread(seeds, self.params['mg_sample_size'])
+                                        - self.sample_spread(seeds_with_extra_node, self.params['mg_sample_size']))
+            new_iter_flag = len(seeds)
+            heapq.heappush(queue, (new_negated_marginal_gain, new_iter_flag, node))
+
+    def seed(self):
+        queue = [(float('-inf'), -1, node) for node in self.params['network'].nodes()]
+        heapq.heapify(queue)
+        seeds = []
+
+        while len(seeds) < self.params['k']:
+            self.perform_next_iter(seeds, queue)
+
+        return (seeds, None, None)

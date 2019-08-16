@@ -1,13 +1,25 @@
-# compute the spread time in the original network and under edge addition and rewiring interventions
-
 from models import *
 
 from pathlib import Path
+
+import numpy as np
+
+from functools import partial
+
+from Multipool import Multipool
+
+import multiprocessing
+
+import os
 
 
 VERBOSE = True
 
 CHECK_FOR_EXISTING_PKL_SAMPLES = False
+
+MULTIPROCESS_SAMPLE = True
+
+network_id = 'Penn94'
 
 sample_size = 100
 
@@ -15,8 +27,11 @@ num_sample_cpus = 28
 
 CAP = 0.9
 
+rhos = [0.01, 0.05,0.1]
 
-def measure_spread_size(network_id):
+rho_id_list = query_cost_id_list 
+        
+def analyze_cost_vs_performance(rho_id):
     #  load in the network and extract preliminary data
     fh = open(edgelist_directory_address + network_group + network_id + '.txt', 'rb')
     G = NX.read_edgelist(fh, delimiter=DELIMITER)
@@ -34,6 +49,7 @@ def measure_spread_size(network_id):
     network_size = NX.number_of_nodes(G)
 
     print('network id', network_id, 'original')
+    print('network size', network_size)
 
     if CHECK_FOR_EXISTING_PKL_SAMPLES:
         path = Path(spreading_pickled_samples_directory_address + 'infection_size_original_'
@@ -45,6 +61,14 @@ def measure_spread_size(network_id):
                   + model_id + ' already exists')
             return
 
+    eps = 0.2
+    a = 0.95
+    eps_prime = 2 * eps * (1 + a * (1 - eps))
+    T = int (3 * (delta + np.log(2)) * (k+1) * np.log(network_size) / (eps * eps))
+    tau = np.log(1 / eps) * network_size / (eps * k)
+
+    rho = rhos[rho_id]
+
     params_original = {
         'network': G,
         'original_network': G,
@@ -55,34 +79,47 @@ def measure_spread_size(network_id):
         'alpha': alpha,
         'beta': beta,
         'gamma': gamma,
+        'eps' : eps,
+        'eps_prime' : eps_prime,
+        'rho' : rho,
+        'T' : T,
+        'tau' : tau,
         'memory': memory,
         'rewire': False,
         'rewiring_mode': 'random_random',
         'num_edges_for_random_random_rewiring': None,
     }
+
     if model_id == '_vanilla IC_':
-        dynamics = IndependentCascadeRandomSeeding(params_original)
+        dynamics = IndependentCascadeEdgeQuerySeeding(params_original)
     else:
         print('model_id is not valid')
         exit()
-    spread_results = dynamics.get_cost_vs_performance(cap=CAP,
-                                                      sample_size = sample_size,
-                                                      multiprocess = True, 
+
+    spread_results = dynamics.get_cost_vs_performance(cap = CAP, 
+                                                      sample_size = sample_size, 
+                                                      multiprocess = MULTIPROCESS_SAMPLE, 
                                                       num_sample_cpus = num_sample_cpus)
+
     if VERBOSE:
         print('================================================', "\n",
+              'rho: ', rho, "\n",
               'spread size: ', spread_results[0], "\n",
+              'node discovery query cost: ', spread_results[3], "\n", 
+              'edge discovery query cost: ', [5], "\n",
               '================================================')
 
     if save_computations:
-        seeding_model_folder = "/random/"
+        seeding_model_folder = "/edge_query/"
         data_dump_folder = (spreading_pickled_samples_directory_address
                                                 + seeding_model_folder)
         os.makedirs(os.path.dirname(data_dump_folder), exist_ok = True)
 
         pickle.dump(spread_results, open(data_dump_folder
-                                         + 'spread_results_'
-                                         + 'k_' + str(k) + '_'  + '.pkl', 'wb'))
+                                         + 'spread_size_samples_'
+                                         + 'k_' + str(k) + '_'
+                                         + 'rho_' + str(rho) + '_'
+                                         + 'sample_size_' + str(sample_size) + '.pkl', 'wb'))
 
 
 if __name__ == '__main__':
@@ -90,12 +127,12 @@ if __name__ == '__main__':
     assert do_computations, "we should be in do_computations mode"
 
     if do_multiprocessing:
-        with multiprocessing.Pool(processes=number_CPU) as pool:
+        with Multipool(processes=number_CPU) as pool:
 
-            pool.map(measure_spread_size, network_id_list)
+            pool.map(analyze_cost_vs_performance, rho_id_list)
 
     else:  # no multi-processing
         # do computations for the original networks:
 
-        for network_id in network_id_list:
-            measure_spread_size(network_id)
+        for rho_id in rho_id_list:
+            analyze_cost_vs_performance(rho_id)
