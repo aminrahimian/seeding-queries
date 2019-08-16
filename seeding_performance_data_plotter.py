@@ -6,7 +6,7 @@ import pickle
 colors = {2 : 'red', 4 : 'orange', 8 : 'blue', 10 : 'black'}
 
 
-def dump_seeding_performance_plot(data_type, seeding_model, external_list_of_k = None):
+def dump_seeding_performance_plot(data_type, seeding_model, external_list_of_k = None, logscaled = True, xticks = None):
     root_folder = 'data/' + data_type
 
     data_folder = root_folder + '/pickled_samples/spreading_pickled_samples/' + seeding_model +'/'
@@ -26,8 +26,12 @@ def dump_seeding_performance_plot(data_type, seeding_model, external_list_of_k =
         if k not in data:
             data[k] = {}    
 
-        q = int(name_bits[8])
-        s = int(name_bits[11])
+        if seeding_model == 'spread_query':
+            q = float(name_bits[8])
+            s = int(name_bits[11])
+        else:
+            q = float(name_bits[6])
+            s = int(name_bits[9])
         
         data[k][q] = (pickle.load(open(data_folder + name, 'rb')), s)
 
@@ -41,16 +45,22 @@ def dump_seeding_performance_plot(data_type, seeding_model, external_list_of_k =
 
     for k in list_of_k:
         x = sorted(data[k].keys())
+
         y = []
         iv = []
         
         for q in x:
             y.append(data[k][q][0][0])
             iv.append(1.96 * data[k][q][0][1] / (data[k][q][1]**0.5))
-            
+        
         plt.errorbar(x, y, iv, color = colors[k], label = 'k=' + str(k))
 
-    plt.xlabel('Query cost')  
+    plt.xlabel('Query cost')
+    if logscaled:
+        plt.xscale('log')
+    if xticks is not None:
+        plt.xticks(xticks, xticks)
+    
     plt.ylabel('Infection size')  
     plt.legend(fontsize = 'large')
 
@@ -61,7 +71,10 @@ def dump_seeding_performance_plot(data_type, seeding_model, external_list_of_k =
 
 if __name__ == "__main__":
     data_type = 'fb100-data'
-    seeding_model = 'spread_query'
-    external_list_of_k = [8, 10]
+    seeding_model = 'edge_query'
+    external_list_of_k = None # [8, 10]
 
-    dump_seeding_performance_plot(data_type, seeding_model, external_list_of_k)
+    logscaled = False
+    xticks = None #[8, 16, 32, 72, 140, 1000]
+
+    dump_seeding_performance_plot(data_type, seeding_model, external_list_of_k, logscaled, xticks)

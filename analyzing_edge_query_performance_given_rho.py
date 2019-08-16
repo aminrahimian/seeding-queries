@@ -116,7 +116,7 @@ def analyze_cost_vs_performance(rho_id):
         os.makedirs(os.path.dirname(data_dump_folder), exist_ok = True)
 
         pickle.dump(spread_results, open(data_dump_folder
-                                         + 'spread_results_'
+                                         + 'spread_size_samples_'
                                          + 'k_' + str(k) + '_'
                                          + 'rho_' + str(rho) + '_'
                                          + 'sample_size_' + str(sample_size) + '.pkl', 'wb'))
