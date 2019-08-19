@@ -16,3 +16,4 @@ module load python/3.6.3
 module load sloan/python/modules/3.6
 
 python3 /home/sanzeed/seeding_queries/dump_sparsified_graphs.py ${SLURM_ARRAY_TASK_ID}
+
