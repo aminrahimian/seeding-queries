@@ -9,7 +9,7 @@ from Multipool import Multipool
 
 batch_size = 25000
 network_id = 'Penn94'
-MULTIPROCESS_BATCH = False
+MULTIPROCESS_BATCH = True
 num_batch_cpu = 28
 
 
