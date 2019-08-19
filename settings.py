@@ -267,13 +267,21 @@ except NameError:
 #     network_id_list = [NET_ID]
 #     print('SLURM_ARRAY_TASK_ID: ' + NET_ID)
 
-query_cost_id_list = []
+# query_cost_id_list = []
+
+# if 'SLURM_ARRAY_TASK_ID' in os.environ:
+#     print('SLURM_ARRAY_TASK_ID: ' + str(os.environ['SLURM_ARRAY_TASK_ID']))
+#     QUERY_COST_ID = int(os.environ['SLURM_ARRAY_TASK_ID']) - 1
+#     query_cost_id_list = [QUERY_COST_ID]
+#     print('QUERY_COST_ID_LIST:', query_cost_id_list)
+
+batch_id_list = []
 
 if 'SLURM_ARRAY_TASK_ID' in os.environ:
     print('SLURM_ARRAY_TASK_ID: ' + str(os.environ['SLURM_ARRAY_TASK_ID']))
-    QUERY_COST_ID = int(os.environ['SLURM_ARRAY_TASK_ID']) - 1
-    query_cost_id_list = [QUERY_COST_ID]
-    print('QUERY_COST_ID_LIST:', query_cost_id_list)
+    BATCH_ID = int(os.environ['SLURM_ARRAY_TASK_ID']) - 1
+    batch_id_list = [BATCH_ID]
+    print('BATCH_ID_LIST:', BATCH_ID)
 
 # theory simulations settings:
 
