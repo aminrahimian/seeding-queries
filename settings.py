@@ -275,7 +275,7 @@ except NameError:
 #     query_cost_id_list = [QUERY_COST_ID]
 #     print('QUERY_COST_ID_LIST:', query_cost_id_list)
 
-batch_id_list = []
+batch_id_list = [0]
 
 if 'SLURM_ARRAY_TASK_ID' in os.environ:
     print('SLURM_ARRAY_TASK_ID: ' + str(os.environ['SLURM_ARRAY_TASK_ID']))
