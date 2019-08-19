@@ -7,7 +7,7 @@ from functools import partial
 from Multipool import Multipool
 
 
-batch_size = 25000
+batch_size = 10000
 network_id = 'Penn94'
 MULTIPROCESS_BATCH = True
 num_batch_cpu = 28
