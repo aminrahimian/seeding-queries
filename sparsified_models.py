@@ -146,8 +146,7 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
             candidate_score = {}
             for spread in spreads:
                 for node in spread:
-                    if node not in set(seeds):
-                        candidate_score[node] = candidate_score.get(node, 0) + 1
+                    candidate_score[node] = candidate_score.get(node, 0) + 1
 
             seeds.append(max(candidate_score, key = lambda node : candidate_score[node]))
 
@@ -182,4 +181,27 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
         return all_spreads, spread_scores
 
     def seed(self):
-        pass
+        candidate_sample_size = int((self.params['size'] / self.params['k']) * np.log(1 / self.params['eps_prime']))
+        all_spreads, spread_scores = self.query()
+        seeds = []
+
+        for i in range(self.params['k']):
+            candidate_nodes = set(np.random.choice(list(self.params['network'].nodes()),
+                                                   size = candidate_sample_size,
+                                                   replace = False))
+
+            candidate_scores = {}
+            for j in range(len(all_spreads)):
+                for node in all_spreads[j]:
+                    if node in candidate_nodes:
+                        candidate_scores[node] = candidate_scores.get(node, 0) + spread_scores[j]
+
+            new_seed = max(candidate_scores, key = lambda node : candidate_scores[node])
+            seeds.append(new_seed)
+            for j in range(len(all_spreads)):
+                if new_seed in all_spreads[j]:
+                    spread_scores[j] = 0
+
+        del(all_spreads)
+        del(spread_scores)
+        return seeds
