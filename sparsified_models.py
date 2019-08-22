@@ -153,3 +153,14 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
 
         del(all_spreads)
         return seeds
+
+
+class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
+    def __init__(self, params):
+        super(IndependentCascadeEdgeQuerySeeding, self).__init__(params)
+
+    def query(self):
+        pass
+
+    def seed(self):
+        pass
