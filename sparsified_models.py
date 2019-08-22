@@ -167,8 +167,14 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
         all_spreads = []
         sparsified_graph_id = self.params['sparsified_graph_id']
         for i in range(self.params['T']):
+            nodes_already_counted = set()
+
             for node in sampled_nodes:
-                all_spreads.append(self.spread(node, sparsified_graph_id))
+                if node not in nodes_already_counted:
+                    connected_component = self.spread(node, sparsified_graph_id)
+                    all_spreads.append(connected_component)
+                    nodes_already_counted.update(connected_component)
+
             sparsified_graph_id += 1
 
         return all_spreads
