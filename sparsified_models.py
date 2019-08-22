@@ -29,9 +29,6 @@ class ContagionModel(object):
                                             num_batch_cpu = 28):
         pass
 
-    def spread(self, nodes, sparsified_graph_id):
-        pass
-
 
 class IndependentCascade(ContagionModel):
     def __init__(self, params):
@@ -104,20 +101,15 @@ class IndependentCascade(ContagionModel):
             for sparsified_graphs_id in sparsified_graphs_id_list:
                 self.generate_connected_components(sparsified_graphs_id)
 
-    def spread(self, nodes, sparsified_graph_id):
+    def spread(self, node, sparsified_graph_id):
         connected_components = pickle.load(open(root_data_address 
                                                 + 'sparsified_graphs/'
                                                 + 'sparsified_graph_' + str(i) 
                                                 + '.pkl', 'rb'))
 
-        spread = set()
-        for node in nodes:
-            for component in connected_components:
-                if node in component:
-                    spread.update(component)
-                    break
-
-        return spread
+        for component in connected_components:
+            if node in component:
+                return component
 
 
 class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
@@ -134,7 +126,7 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
             infected_nodes = sampled_nodes[i][:int(self.params['rho'])]
 
             for node in infected_nodes:
-                spreads.append(self.spread({node}, sparsified_graph_id))
+                spreads.append(self.spread(node, sparsified_graph_id))
                 sparsified_graph_id += 1
 
             all_spreads.append(spreads)
@@ -161,14 +153,3 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
 
         del(all_spreads)
         return seeds
-
-
-class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
-    def __init__(self, params):
-        super(IndependentCascadeEdgeQuerySeeding, self).__init__(params)
-
-    def query(self):
-        pass
-
-    def seed(self):
-        pass
