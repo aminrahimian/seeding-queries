@@ -160,7 +160,18 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
         super(IndependentCascadeEdgeQuerySeeding, self).__init__(params)
 
     def query(self):
-        pass
+        sampled_nodes = np.random.choice(list(self.params['network'].nodes()),
+                                         size = int(self.params['rho']),
+                                         replace = False)
+
+        all_spreads = []
+        sparsified_graph_id = self.params['sparsified_graph_id']
+        for i in range(self.params['T']):
+            for node in sampled_nodes:
+                all_spreads.append(self.spread(node, sparsified_graph_id))
+            sparsified_graph_id += 1
+
+        return all_spreads
 
     def seed(self):
         pass
