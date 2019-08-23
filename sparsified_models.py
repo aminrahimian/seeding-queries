@@ -140,8 +140,8 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
 
         for i in range(self.params['k']):
             spreads = all_spreads[i]
-            for j in  range(len(spreads)):
-                if spreads[j].intersection(set(seeds)):
+            for j in range(len(spreads)):
+                if len(spreads[j].intersection(set(seeds))) != 0:
                     spreads[j] = set()
         
             candidate_score = {}
