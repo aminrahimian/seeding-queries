@@ -104,7 +104,8 @@ class IndependentCascade(ContagionModel):
     def spread(self, node, sparsified_graph_id):
         connected_components = pickle.load(open(root_data_address 
                                                 + 'sparsified_graphs/'
-                                                + 'sparsified_graph_' + str(i) 
+                                                + self.params['network_id']
+                                                + 'sparsified_graph_' + str(sparsified_graph_id) 
                                                 + '.pkl', 'rb'))
 
         for component in connected_components:
