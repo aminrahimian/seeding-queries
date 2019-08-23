@@ -34,6 +34,7 @@ def generate_sparsified_graphs_by_batch(batch_id):
 
     f = lambda graph, u, v : beta
     params = {'network' : G,
+              'network_id' : network_id,
               'f' : f,
               'beta' : beta}
     contagion_model = IndependentCascade(params)
