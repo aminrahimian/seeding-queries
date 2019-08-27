@@ -1,4 +1,4 @@
-from models import *
+from sparsified_models import *
 
 from pathlib import Path
 
@@ -19,11 +19,17 @@ VERBOSE = True
 
 CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
+MULTIPROCESS_SEED_SAMPLE = False
+
 MULTIPROCESS_SAMPLE = True
+
+seed_sample_size = 50
 
 sample_size = 500
 
-num_sample_cpus = 48
+num_seed_sample_cpus = 1
+
+num_sample_cpus = 28
 
 CAP = 0.9
 
@@ -68,11 +74,16 @@ def analyze_cost_vs_performance(query_cost_id):
     tau = 0.9 * network_size
     query_cost = query_costs[query_cost_id]
     rho = query_cost / k
+    sparsified_graph_id = sum(query_cost[:query_cost_id])
+    sample_nodes = pickle.load(open(root_data_address
+                                    + 'sample_nodes/'
+                                    + 'fb100_sampled_nodes_Penn94.pkl', 'rb'))
 
     params_original = {
         'network': G,
         'original_network': G,
         'size': network_size,
+        'netowrk_id' : network_id,
         'add_edges': False,
         'k': k,
         'delta': delta,
@@ -82,6 +93,9 @@ def analyze_cost_vs_performance(query_cost_id):
         'eps' : eps,
         'eps_prime' : eps_prime,
         'rho' : rho,
+        'sparsified_graph_id' : sparsified_graph_id,
+        'sampled_nodes' : sample_nodes,
+        'f' : lambda graph, u, v : beta,
         'T' : T,
         'tau' : tau,
         'memory': memory,
@@ -96,10 +110,12 @@ def analyze_cost_vs_performance(query_cost_id):
         print('model_id is not valid')
         exit()
 
-    spread_size_sample = dynamics.get_cost_vs_performance(cap = CAP, 
-                                                          sample_size = sample_size,
-                                                          multiprocess = MULTIPROCESS_SAMPLE,
-                                                          num_sample_cpus = num_sample_cpus)
+    spread_size_sample = dynamics.evaluate_model(seed_sample_size = seed_sample_size,
+                                                 sample_size = sample_size,
+                                                 num_seed_sample_cpus = num_seed_sample_cpus, 
+                                                 num_sample_cpus = num_sample_cpus,
+                                                 MULTIPROCESS_SEED_SAMPLE = MULTIPROCESS_SEED_SAMPLE,
+                                                 MULTIPROCESS_SAMPLE = MULTIPROCESS_SAMPLE)
 
     if VERBOSE:
         print('================================================', "\n",
