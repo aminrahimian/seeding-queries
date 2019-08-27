@@ -29,6 +29,28 @@ class ContagionModel(object):
                                             num_batch_cpu = 28):
         pass
 
+    def spread(self, node, sparsified_graph_id):
+        connected_components = pickle.load(open(root_data_address 
+                                                + 'sparsified_graphs/'
+                                                + self.params['network_id']
+                                                + '/sparsified_graph_' + str(sparsified_graph_id) 
+                                                + '.pkl', 'rb'))
+
+        for component in connected_components:
+            if node in component:
+                return component
+
+    def seed(self, first_sparsified_graph_id):
+        pass
+
+    def get_spread_for_seed_set(self, seeds, sparsified_graph_id):
+        spread = set()
+
+        for seed in seeds:
+            spread.update(self.spread(seed, sparsified_graph_id))
+
+        return spread
+
 
 class IndependentCascade(ContagionModel):
     def __init__(self, params):
@@ -101,26 +123,15 @@ class IndependentCascade(ContagionModel):
             for sparsified_graphs_id in sparsified_graphs_id_list:
                 self.generate_connected_components(sparsified_graphs_id)
 
-    def spread(self, node, sparsified_graph_id):
-        connected_components = pickle.load(open(root_data_address 
-                                                + 'sparsified_graphs/'
-                                                + self.params['network_id']
-                                                + '/sparsified_graph_' + str(sparsified_graph_id) 
-                                                + '.pkl', 'rb'))
-
-        for component in connected_components:
-            if node in component:
-                return component
-
 
 class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
     def __init__(self, params):
         super(IndependentCascadeSpreadQuerySeeding, self).__init__(params)
 
-    def query(self):
+    def query(self, first_sparsified_graph_id):
         sampled_nodes = self.params['sampled_nodes']
         all_spreads = []
-        sparsified_graph_id = self.params['sparsified_graph_id']
+        sparsified_graph_id = first_sparsified_graph_id
 
         for i in range(self.params['k']):
             spreads = []
@@ -134,8 +145,8 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
 
         return all_spreads
 
-    def seed(self):
-        all_spreads = self.query()
+    def seed(self, first_sparsified_graph_id):
+        all_spreads = self.query(first_sparsified_graph_id)
         seeds = []
 
         for i in range(self.params['k']):
@@ -159,13 +170,13 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
     def __init__(self, params):
         super(IndependentCascadeEdgeQuerySeeding, self).__init__(params)
 
-    def query(self):
+    def query(self, first_sparsified_graph_id):
         sampled_nodes = np.random.choice(list(self.params['network'].nodes()),
                                          size = int(self.params['rho']),
                                          replace = False)
         all_spreads = []
         spread_scores = []
-        sparsified_graph_id = self.params['sparsified_graph_id']
+        sparsified_graph_id = first_sparsified_graph_id
 
         for i in range(self.params['T']):
             nodes_already_counted = set()
@@ -181,9 +192,9 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
 
         return all_spreads, spread_scores
 
-    def seed(self):
+    def seed(self, first_sparsified_graph_id):
         candidate_sample_size = int((self.params['size'] / self.params['k']) * np.log(1 / self.params['eps_prime']))
-        all_spreads, spread_scores = self.query()
+        all_spreads, spread_scores = self.query(first_sparsified_graph_id)
         seeds = []
 
         for i in range(self.params['k']):
