@@ -51,6 +51,47 @@ class ContagionModel(object):
 
         return spread
 
+    def evaluate_seeds(self, first_sparsified_graph_id, 
+                       sample_size = 1000, num_sample_cpus = 28, MULTIPROCESS_SAMPLE = True):
+        seeds = self.seed(first_sparsified_graph_id)
+        spreads = []
+        first_eval_sparsified_graph_id = self.params['eval_sparsified_graph_id']
+
+        if MULTIPROCESS_SAMPLE:
+            partial_get_spread = lambda i : len(self.get_spread_for_seed_set(seeds, i))
+            with Multipool(processes = num_sample_cpus) as pool:
+                spreads = pool.map(partial_get_spread,
+                                   list(range(first_eval_sparsified_graph_id, first_eval_sparsified_graph_id + sample_size)))
+        else:
+            for i in range(first_eval_sparsified_graph_id, first_eval_sparsified_graph_id + sample_size):
+                spreads.append(len(self.get_spread_for_seed_set(seeds, i)))
+
+        return spreads
+
+    def evaluate_model(self, seed_sample_size = 50, num_seed_sample_cpus = 1, MULTIPROCESS_SEED_SAMPLE = False):
+        sparsified_graph_id = self.params['sparsified_graph_id']
+        graph_id_interval = self.params['k'] * int(self.params['rho'])
+        graph_id_list = [sparsified_graph_id + i * graph_id_interval for i in range(seed_sample_size)]
+        all_spreads = []
+
+        if MULTIPROCESS_SEED_SAMPLE:
+            partial_eval_seeds = partial(self.evaluate_seeds,
+                                         sample_size = 1000, 
+                                         num_sample_cpus = 28, 
+                                         MULTIPROCESS_SAMPLE = True)
+            with Multipool(processes = num_seed_sample_cpus) as pool:
+                spread_samples = pool.map(partial_eval_seeds, graph_id_list)
+            for spread_sample in spread_samples:
+                all_spreads += spread_sample
+        else:
+            for graph_id in graph_id_list:
+                spread += self.evaluate_seeds(graph_id,
+                                              sample_size = 1000, 
+                                              num_sample_cpus = 28, 
+                                              MULTIPROCESS_SAMPLE = True)
+
+        return np.mean(all_spreads), np.std(all_spreads), np.sum([spread < 10 for spread in all_spreads])
+
 
 class IndependentCascade(ContagionModel):
     def __init__(self, params):
