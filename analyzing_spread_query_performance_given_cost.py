@@ -84,7 +84,7 @@ def analyze_cost_vs_performance(query_cost_id):
         'network': G,
         'original_network': G,
         'size': network_size,
-        'netowrk_id' : network_id,
+        'network_id' : network_id,
         'add_edges': False,
         'k': k,
         'delta': delta,
