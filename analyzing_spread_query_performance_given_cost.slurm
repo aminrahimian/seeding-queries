@@ -1,14 +1,14 @@
 #!/bin/bash
-#SBATCH --job-name="analyzing_spread_query_performance_k_8"
+#SBATCH --job-name="analyzing_spread_query_performance"
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=28
 #SBATCH --mem-per-cpu=4G
 #SBATCH --partition=sched_mit_sloan_batch
 #SBATCH --time=4-00:00:00
-#SBATCH --array=1-2
+#SBATCH --array=1-10
 
-#SBATCH -o /home/sanzeed/seeding_queries/analyzing_spread_query_performance_k_8.out
-#SBATCH -e /home/sanzeed/seeding_queries/analyzing_spread_query_performance_k_8.err
+#SBATCH -o /home/sanzeed/seeding_queries/analyzing_spread_query_performance.out
+#SBATCH -e /home/sanzeed/seeding_queries/analyzing_spread_query_performance.err
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=sanzeed@mit.edu
 
