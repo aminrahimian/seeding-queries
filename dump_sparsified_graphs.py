@@ -58,7 +58,7 @@ def generate_connected_components(i, graph):
         nodes.difference_update(connected_component)
         connected_components.append(connected_component)
 
-    dump_folder_address = root_data_address + network_id + '/sparsified_graphs/'
+    dump_folder_address = root_data_address + '/sparsified_graphs/' + network_id + '/'
     os.makedirs(os.path.dirname(dump_folder_address), exist_ok = True)
 
     pickle.dump(connected_components, open(dump_folder_address
