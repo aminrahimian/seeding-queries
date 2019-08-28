@@ -129,7 +129,7 @@ def analyze_cost_vs_performance(query_cost_id):
         os.makedirs(os.path.dirname(data_dump_folder), exist_ok = True)
 
         pickle.dump(spread_size_sample, open(data_dump_folder
-                                              + 'spread_size_samples_'
+                                              + 'sparsified_spread_size_samples_'
                                               + 'k_' + str(k) + '_'
                                               + '_query_cost_' + str(query_cost)
                                               + '_sample_size_' + str(sample_size)
