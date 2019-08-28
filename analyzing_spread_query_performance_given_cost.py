@@ -75,6 +75,7 @@ def analyze_cost_vs_performance(query_cost_id):
     query_cost = query_costs[query_cost_id]
     rho = query_cost / k
     sparsified_graph_id = sum(query_cost[:query_cost_id])
+    eval_sparsified_graph_id = 99500
     sample_nodes = pickle.load(open(root_data_address
                                     + 'sample_nodes/'
                                     + 'fb100_sampled_nodes_Penn94.pkl', 'rb'))
@@ -94,6 +95,7 @@ def analyze_cost_vs_performance(query_cost_id):
         'eps_prime' : eps_prime,
         'rho' : rho,
         'sparsified_graph_id' : sparsified_graph_id,
+        'eval_sparsified_graph_id' : eval_sparsified_graph_id,
         'sampled_nodes' : sample_nodes,
         'f' : lambda graph, u, v : beta,
         'T' : T,
