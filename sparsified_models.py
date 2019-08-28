@@ -87,10 +87,10 @@ class ContagionModel(object):
                 all_spreads += spread_sample
         else:
             for graph_id in graph_id_list:
-                spread += self.evaluate_seeds(graph_id,
-                                              sample_size = 1000, 
-                                              num_sample_cpus = 28, 
-                                              MULTIPROCESS_SAMPLE = True)
+                all_spreads += self.evaluate_seeds(graph_id,
+                                                   sample_size = 1000, 
+                                                   num_sample_cpus = 28, 
+                                                   MULTIPROCESS_SAMPLE = True)
 
         return np.mean(all_spreads), np.std(all_spreads), np.sum([spread < 10 for spread in all_spreads])
 
