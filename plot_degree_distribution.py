@@ -24,10 +24,16 @@ if len(list(G.selfloop_edges())) > 0:
     G.remove_edges_from(G.selfloop_edges())
     print('number of edges before self loop removal: ', G.size())
 network_size = NX.number_of_nodes(G)
+edge_size = G.size()
 
 print('network id', network_id, 'original')
-print('network size', network_size)
+print('node set size', network_size)
+print('edge set size', edge_size)
+
 degree_sequence = sorted([d for n, d in G.degree()], reverse=True)  # degree sequence
+
+print('avg degree', np.mean(degree_sequence))
+
 # print "Degree sequence", degree_sequence
 degreeCount = collections.Counter(degree_sequence)
 deg, cnt = zip(*degreeCount.items())
