@@ -72,10 +72,11 @@ def evaluate_model(contagion_model, seed_sample_size = 50, sample_size = 500,
             all_spreads += spread_sample
     else:
         for graph_id in graph_id_list:
-            all_spreads += contagion_model.evaluate_seeds(graph_id,
-                                                          sample_size = 1000, 
-                                                          num_sample_cpus = 28, 
-                                                          MULTIPROCESS_SAMPLE = True)
+            all_spreads += evaluate_seeds(contagion_model,
+                                          graph_id,
+                                          sample_size = 1000, 
+                                          num_sample_cpus = 28, 
+                                          MULTIPROCESS_SAMPLE = True)
 
     return np.mean(all_spreads), np.std(all_spreads), np.sum([spread < 10 for spread in all_spreads])
 
