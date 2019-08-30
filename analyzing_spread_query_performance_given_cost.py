@@ -23,13 +23,13 @@ MULTIPROCESS_SEED_SAMPLE = False
 
 MULTIPROCESS_SAMPLE = True
 
-seed_sample_size = 1
+seed_sample_size = 50
 
-sample_size = 100
+sample_size = 500
 
 num_seed_sample_cpus = 1
 
-num_sample_cpus = 1
+num_sample_cpus = 28
 
 CAP = 0.9
 
