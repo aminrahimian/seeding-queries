@@ -36,6 +36,14 @@ CAP = 0.9
 query_costs = [4, 8, 12, 16, 20, 24, 32, 44, 60, 80]
 
         
+def get_spread_for_seed_set(contagion_model, sparsified_graph_id, seeds):
+    spread = set()
+
+    for seed in seeds:
+        spread.update(contagion_model.spread(seed, sparsified_graph_id))
+
+    return spread
+
 def evaluate_seeds(contagion_model, first_sparsified_graph_id, 
                    sample_size = 1000, num_sample_cpus = 28, MULTIPROCESS_SAMPLE = True):
     seeds = contagion_model.seed(first_sparsified_graph_id)
@@ -43,7 +51,7 @@ def evaluate_seeds(contagion_model, first_sparsified_graph_id,
     first_eval_sparsified_graph_id = contagion_model.params['eval_sparsified_graph_id']
 
     if MULTIPROCESS_SAMPLE:
-        partial_get_spread = partial(contagion_model.get_spread_for_seed_set, seeds = seeds)
+        partial_get_spread = partial(get_spread_for_seed_set, seeds = seeds)
         with Multipool(processes = num_sample_cpus) as pool:
             spreads = pool.map(partial_get_spread,
                                 list(range(first_eval_sparsified_graph_id, first_eval_sparsified_graph_id + sample_size)))
@@ -62,7 +70,7 @@ def evaluate_model(contagion_model, seed_sample_size = 50, sample_size = 500,
     all_spreads = []
 
     if MULTIPROCESS_SEED_SAMPLE:
-        partial_eval_seeds = partial(contagion_model.evaluate_seeds,
+        partial_eval_seeds = partial(evaluate_seeds,
                                      sample_size = sample_size, 
                                      num_sample_cpus = num_sample_cpus, 
                                      MULTIPROCESS_SAMPLE = MULTIPROCESS_SAMPLE)

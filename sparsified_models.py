@@ -43,14 +43,6 @@ class ContagionModel(object):
     def seed(self, first_sparsified_graph_id):
         pass
 
-    def get_spread_for_seed_set(self, sparsified_graph_id, seeds):
-        spread = set()
-
-        for seed in seeds:
-            spread.update(self.spread(seed, sparsified_graph_id))
-
-        return spread
-
 
 class IndependentCascade(ContagionModel):
     def __init__(self, params):
