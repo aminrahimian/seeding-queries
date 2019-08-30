@@ -23,19 +23,62 @@ MULTIPROCESS_SEED_SAMPLE = False
 
 MULTIPROCESS_SAMPLE = True
 
-seed_sample_size = 50
+seed_sample_size = 1
 
-sample_size = 500
+sample_size = 100
 
 num_seed_sample_cpus = 1
 
-num_sample_cpus = 28
+num_sample_cpus = 1
 
 CAP = 0.9
 
 query_costs = [4, 8, 12, 16, 20, 24, 32, 44, 60, 80]
 
         
+def evaluate_seeds(contagion_model, first_sparsified_graph_id, 
+                   sample_size = 1000, num_sample_cpus = 28, MULTIPROCESS_SAMPLE = True):
+    seeds = contagion_model.seed(first_sparsified_graph_id)
+    spreads = []
+    first_eval_sparsified_graph_id = contagion_model.params['eval_sparsified_graph_id']
+
+    if MULTIPROCESS_SAMPLE:
+        partial_get_spread = partial(contagion_model.get_spread_for_seed_set, seeds = seeds)
+        with Multipool(processes = num_sample_cpus) as pool:
+            spreads = pool.map(partial_get_spread,
+                                list(range(first_eval_sparsified_graph_id, first_eval_sparsified_graph_id + sample_size)))
+    else:
+        for i in range(first_eval_sparsified_graph_id, first_eval_sparsified_graph_id + sample_size):
+            spreads.append(len(contagion_model.get_spread_for_seed_set(seeds, i)))
+
+    return spreads
+
+def evaluate_model(contagion_model, seed_sample_size = 50, sample_size = 500, 
+                   num_seed_sample_cpus = 1, num_sample_cpus = 28, 
+                   MULTIPROCESS_SEED_SAMPLE = False, MULTIPROCESS_SAMPLE = True):
+    sparsified_graph_id = contagion_model.params['sparsified_graph_id']
+    graph_id_interval = contagion_model.params['k'] * int(contagion_model.params['rho'])
+    graph_id_list = [sparsified_graph_id + i * graph_id_interval for i in range(seed_sample_size)]
+    all_spreads = []
+
+    if MULTIPROCESS_SEED_SAMPLE:
+        partial_eval_seeds = partial(contagion_model.evaluate_seeds,
+                                     sample_size = sample_size, 
+                                     num_sample_cpus = num_sample_cpus, 
+                                     MULTIPROCESS_SAMPLE = MULTIPROCESS_SAMPLE)
+        with Multipool(processes = num_seed_sample_cpus) as pool:
+            spread_samples = pool.map(partial_eval_seeds, graph_id_list)
+        for spread_sample in spread_samples:
+            all_spreads += spread_sample
+    else:
+        for graph_id in graph_id_list:
+            all_spreads += contagion_model.evaluate_seeds(graph_id,
+                                                          sample_size = 1000, 
+                                                          num_sample_cpus = 28, 
+                                                          MULTIPROCESS_SAMPLE = True)
+
+    return np.mean(all_spreads), np.std(all_spreads), np.sum([spread < 10 for spread in all_spreads])
+
 def analyze_cost_vs_performance(query_cost_id):
     #  load in the network and extract preliminary data
     fh = open(edgelist_directory_address + network_group + network_id + '.txt', 'rb')
@@ -74,8 +117,8 @@ def analyze_cost_vs_performance(query_cost_id):
     tau = 0.9 * network_size
     query_cost = query_costs[query_cost_id]
     rho = query_cost / k
-    sparsified_graph_id = 100000 + sum(query_costs[:query_cost_id]) * seed_sample_size
-    eval_sparsified_graph_id = 119500
+    sparsified_graph_id = sum(query_costs[:query_cost_id]) * seed_sample_size
+    eval_sparsified_graph_id = 300
     sample_nodes = pickle.load(open(root_data_address
                                     + 'sampled_nodes/'
                                     + 'fb100_sampled_nodes_Penn94.pkl', 'rb'))
@@ -112,12 +155,13 @@ def analyze_cost_vs_performance(query_cost_id):
         print('model_id is not valid')
         exit()
 
-    spread_size_sample = dynamics.evaluate_model(seed_sample_size = seed_sample_size,
-                                                 sample_size = sample_size,
-                                                 num_seed_sample_cpus = num_seed_sample_cpus, 
-                                                 num_sample_cpus = num_sample_cpus,
-                                                 MULTIPROCESS_SEED_SAMPLE = MULTIPROCESS_SEED_SAMPLE,
-                                                 MULTIPROCESS_SAMPLE = MULTIPROCESS_SAMPLE)
+    spread_size_sample = evaluate_model(contagion_model = dynamics,
+                                        seed_sample_size = seed_sample_size,
+                                        sample_size = sample_size,
+                                        num_seed_sample_cpus = num_seed_sample_cpus, 
+                                        num_sample_cpus = num_sample_cpus,
+                                        MULTIPROCESS_SEED_SAMPLE = MULTIPROCESS_SEED_SAMPLE,
+                                        MULTIPROCESS_SAMPLE = MULTIPROCESS_SAMPLE)
 
     if VERBOSE:
         print('================================================', "\n",
