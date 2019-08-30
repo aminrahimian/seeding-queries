@@ -36,7 +36,7 @@ CAP = 0.9
 query_costs = [4, 8, 12, 16, 20, 24, 32, 44, 60, 80]
 
         
-def get_spread_for_seed_set(contagion_model, sparsified_graph_id, seeds):
+def get_spread_for_seed_set(sparsified_graph_id, contagion_model, seeds):
     spread = set()
 
     for seed in seeds:
@@ -57,7 +57,7 @@ def evaluate_seeds(first_sparsified_graph_id, contagion_model,
                                 list(range(first_eval_sparsified_graph_id, first_eval_sparsified_graph_id + sample_size)))
     else:
         for i in range(first_eval_sparsified_graph_id, first_eval_sparsified_graph_id + sample_size):
-            spreads.append(len(contagion_model.get_spread_for_seed_set(seeds, i)))
+            spreads.append(len(contagion_model.get_spread_for_seed_set(i, seeds)))
 
     return spreads
 
