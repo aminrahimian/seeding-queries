@@ -36,7 +36,7 @@ class ContagionModel(object):
         #                                         + '/sparsified_graph_' + str(sparsified_graph_id) 
         #                                         + '.pkl', 'rb'))
 
-        connected_components = [{i} for i in self.params['netowrk'].nodes()]
+        connected_components = [{i} for i in self.params['network'].nodes()]
 
         for component in connected_components:
             if node in component:
