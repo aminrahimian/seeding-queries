@@ -56,6 +56,8 @@ class ContagionModel(object):
         seeds = self.seed(first_sparsified_graph_id)
         spreads = []
         first_eval_sparsified_graph_id = self.params['eval_sparsified_graph_id']
+        print(first_eval_sparsified_graph_id)
+        print('=============================')
 
         if MULTIPROCESS_SAMPLE:
             partial_get_spread = partial(self.get_spread_for_seed_set, seeds = seeds)
