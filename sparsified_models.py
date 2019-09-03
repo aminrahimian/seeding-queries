@@ -30,11 +30,13 @@ class ContagionModel(object):
         pass
 
     def spread(self, node, sparsified_graph_id):
-        connected_components = pickle.load(open(root_data_address 
-                                                + 'sparsified_graphs/'
-                                                + self.params['network_id']
-                                                + '/sparsified_graph_' + str(sparsified_graph_id) 
-                                                + '.pkl', 'rb'))
+        # connected_components = pickle.load(open(root_data_address 
+        #                                         + 'sparsified_graphs/'
+        #                                         + self.params['network_id']
+        #                                         + '/sparsified_graph_' + str(sparsified_graph_id) 
+        #                                         + '.pkl', 'rb'))
+
+        connected_components = [{i} for i in self.params['network'].nodes()]
 
         for component in connected_components:
             if node in component:
@@ -42,6 +44,31 @@ class ContagionModel(object):
 
     def seed(self, first_sparsified_graph_id):
         pass
+
+    def get_spread_for_seed_set(self, sparsified_graph_id, seeds):
+        spread = set()
+
+        for seed in seeds:
+            spread.update(self.spread(seed, sparsified_graph_id))
+
+        return spread
+
+    def evaluate_seeds(self, first_sparsified_graph_id, 
+                    sample_size = 1000, num_sample_cpus = 28, MULTIPROCESS_SAMPLE = True):
+        seeds = self.seed(first_sparsified_graph_id)
+        spreads = []
+        first_eval_sparsified_graph_id = self.params['eval_sparsified_graph_id']
+
+        if MULTIPROCESS_SAMPLE:
+            partial_get_spread = partial(self.get_spread_for_seed_set, seeds = seeds)
+            with Multipool(processes = num_sample_cpus) as pool:
+                spreads = pool.map(partial_get_spread,
+                                    list(range(first_eval_sparsified_graph_id, first_eval_sparsified_graph_id + sample_size)))
+        else:
+            for i in range(first_eval_sparsified_graph_id, first_eval_sparsified_graph_id + sample_size):
+                spreads.append(len(self.get_spread_for_seed_set(i, seeds)))
+
+        return spreads
 
 
 class IndependentCascade(ContagionModel):
