@@ -114,9 +114,7 @@ def analyze_cost_vs_performance(query_cost_id):
 
     spread_size_sample = dynamics.evaluate_model(seed_sample_size = seed_sample_size,
                                                  sample_size = sample_size,
-                                                 num_seed_sample_cpus = num_seed_sample_cpus, 
                                                  num_sample_cpus = num_sample_cpus,
-                                                 MULTIPROCESS_SEED_SAMPLE = MULTIPROCESS_SEED_SAMPLE,
                                                  MULTIPROCESS_SAMPLE = MULTIPROCESS_SAMPLE)
 
     if VERBOSE:
