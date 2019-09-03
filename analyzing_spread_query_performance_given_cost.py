@@ -45,6 +45,8 @@ def evaluate_model(contagion_model, seed_sample_size = 50, sample_size = 500,
     all_spreads = []
 
     for graph_id in graph_id_list:
+        print(graph_id)
+        print('===================================')
         all_spreads += contagion_model.evaluate_seeds(graph_id,
                                                       sample_size = sample_size, 
                                                       num_sample_cpus = num_sample_cpus, 
