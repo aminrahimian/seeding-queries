@@ -113,8 +113,7 @@ def analyze_cost_vs_performance(query_cost_id):
     #                                              num_seed_sample_cpus = num_seed_sample_cpus,
     #                                              MULTIPROCESS_SEED_SAMPLE = MULTIPROCESS_SEED_SAMPLE)
 
-    spread_size_sample = dynamics.get_cost_vs_performance(self, 
-                                                          cap=0.9, 
+    spread_size_sample = dynamics.get_cost_vs_performance(cap=0.9, 
                                                           sample_size = 3, 
                                                           multiprocess = True, 
                                                           num_sample_cpus = 28)
