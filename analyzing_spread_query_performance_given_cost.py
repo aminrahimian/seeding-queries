@@ -19,17 +19,15 @@ VERBOSE = True
 
 CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
-MULTIPROCESS_SEED_SAMPLE = True
+MULTIPROCESS_SAMPLE = True
 
-seed_sample_size = 50
+sample_size = 3
 
-sample_size = 500
-
-num_seed_sample_cpus = 28
+num_sample_cpus = 28
 
 CAP = 0.9
 
-query_costs = [4, 8, 12, 16, 20, 24, 32, 44, 60, 80]
+query_costs = [2.0, 4.0, 5.0, 8.0, 12.0, 19.0, 29.0, 45.0]
 
         
 def analyze_cost_vs_performance(query_cost_id):
@@ -70,17 +68,11 @@ def analyze_cost_vs_performance(query_cost_id):
     tau = 0.9 * network_size
     query_cost = query_costs[query_cost_id]
     rho = query_cost / k
-    sparsified_graph_id = 100000 + sum(query_costs[:query_cost_id]) * seed_sample_size
-    eval_sparsified_graph_id = 119500
-    sample_nodes = pickle.load(open(root_data_address
-                                    + 'sampled_nodes/'
-                                    + 'fb100_sampled_nodes_Penn94.pkl', 'rb'))
 
     params_original = {
         'network': G,
         'original_network': G,
         'size': network_size,
-        'network_id' : network_id,
         'add_edges': False,
         'k': k,
         'delta': delta,
@@ -90,10 +82,6 @@ def analyze_cost_vs_performance(query_cost_id):
         'eps' : eps,
         'eps_prime' : eps_prime,
         'rho' : rho,
-        'sparsified_graph_id' : sparsified_graph_id,
-        'eval_sparsified_graph_id' : eval_sparsified_graph_id,
-        'sampled_nodes' : sample_nodes,
-        'f' : lambda graph, u, v : beta,
         'T' : T,
         'tau' : tau,
         'memory': memory,
@@ -108,15 +96,10 @@ def analyze_cost_vs_performance(query_cost_id):
         print('model_id is not valid')
         exit()
 
-    # spread_size_sample = dynamics.evaluate_model(seed_sample_size = seed_sample_size,
-    #                                              sample_size = sample_size,
-    #                                              num_seed_sample_cpus = num_seed_sample_cpus,
-    #                                              MULTIPROCESS_SEED_SAMPLE = MULTIPROCESS_SEED_SAMPLE)
-
-    spread_size_sample = dynamics.get_cost_vs_performance(cap=0.9, 
-                                                          sample_size = 3, 
-                                                          multiprocess = True, 
-                                                          num_sample_cpus = 28)
+    spread_size_sample = dynamics.get_cost_vs_performance(cap = CAP, 
+                                                          sample_size = sample_size,
+                                                          multiprocess = MULTIPROCESS_SAMPLE,
+                                                          num_sample_cpus = num_sample_cpus)
 
     if VERBOSE:
         print('================================================', "\n",
@@ -124,17 +107,17 @@ def analyze_cost_vs_performance(query_cost_id):
               '================================================')
 
     if save_computations:
-        seeding_model_folder = "/spread_query/"
+        seeding_model_folder = "/spread_query/Penn94/"
         data_dump_folder = (spreading_pickled_samples_directory_address
+                                                + 'k_' + str(k)
                                                 + seeding_model_folder)
         os.makedirs(os.path.dirname(data_dump_folder), exist_ok = True)
 
         pickle.dump(spread_size_sample, open(data_dump_folder
-                                              + 'sparsified_spread_size_samples_'
-                                              + 'k_' + str(k) + '_'
+                                              + 'spread_size_samples_'
+                                              + network_group + network_id
                                               + '_query_cost_' + str(query_cost)
-                                              + '_sample_size_' + str(sample_size)
-                                              + '.pkl', 'wb'))
+                                              + model_id + '.pkl', 'wb'))
 
 if __name__ == '__main__':
 
