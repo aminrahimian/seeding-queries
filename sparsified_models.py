@@ -30,11 +30,12 @@ class ContagionModel(object):
         pass
 
     def spread(self, node, sparsified_graph_id):
-        connected_components = pickle.load(open(root_data_address 
-                                                + 'sparsified_graphs/'
-                                                + self.params['network_id']
-                                                + '/sparsified_graph_' + str(sparsified_graph_id) 
-                                                + '.pkl', 'rb'))
+        # connected_components = pickle.load(open(root_data_address 
+        #                                         + 'sparsified_graphs/'
+        #                                         + self.params['network_id']
+        #                                         + '/sparsified_graph_' + str(sparsified_graph_id) 
+        #                                         + '.pkl', 'rb'))
+        connected_components = [{i} for i in self.params['network'].nodes()]
 
         for component in connected_components:
             if node in component:
