@@ -21,15 +21,11 @@ CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
 MULTIPROCESS_SEED_SAMPLE = False
 
-MULTIPROCESS_SAMPLE = True
-
 seed_sample_size = 50
 
 sample_size = 500
 
-num_seed_sample_cpus = 1
-
-num_sample_cpus = 28
+num_seed_sample_cpus = 28
 
 CAP = 0.9
 
@@ -114,8 +110,8 @@ def analyze_cost_vs_performance(query_cost_id):
 
     spread_size_sample = dynamics.evaluate_model(seed_sample_size = seed_sample_size,
                                                  sample_size = sample_size,
-                                                 num_sample_cpus = num_sample_cpus,
-                                                 MULTIPROCESS_SAMPLE = MULTIPROCESS_SAMPLE)
+                                                 num_seed_sample_cpus = num_seed_sample_cpus,
+                                                 MULTIPROCESS_SEED_SAMPLE = MULTIPROCESS_SEED_SAMPLE)
 
     if VERBOSE:
         print('================================================', "\n",
