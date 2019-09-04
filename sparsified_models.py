@@ -54,6 +54,8 @@ class ContagionModel(object):
         return spread
 
     def evaluate_seeds(self, first_sparsified_graph_id, sample_size = 1000):
+        print("Sampling seeds with graph", first_sparsified_graph_id)
+        
         seeds = self.seed(first_sparsified_graph_id)
         spreads = []
         first_eval_sparsified_graph_id = self.params['eval_sparsified_graph_id']
