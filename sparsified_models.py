@@ -108,11 +108,11 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
     def query(self, first_sparsified_graph_id):
         sampled_nodes = self.params['sampled_nodes']
         all_spreads = []
-        sparsified_graph_id = first_sparsified_graph_id
 
         for i in range(self.params['k']):
             spreads = []
             infected_nodes = sampled_nodes[i][:int(self.params['rho'])]
+            sparsified_graph_id = first_sparsified_graph_id + i * self.params['max_rho']
 
             for node in infected_nodes:
                 spreads.append(self.spread(node, sparsified_graph_id))
