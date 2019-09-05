@@ -92,7 +92,7 @@ def analyze_cost_vs_performance(query_cost_id):
         'rho' : rho,
         'sparsified_graph_id' : sparsified_graph_id,
         'eval_sparsified_graph_id' : eval_sparsified_graph_id,
-        'sampled_nodes' : sample_nodes,
+        #'sampled_nodes' : sample_nodes,
         'f' : lambda graph, u, v : beta,
         'T' : T,
         'tau' : tau,
