@@ -67,7 +67,8 @@ class ContagionModel(object):
             for i in range(first_eval_sparsified_graph_id, first_eval_sparsified_graph_id + sample_size):
                 spreads.append(len(self.get_spread_for_seed_set(i, seeds)))
         else:
-            partial_get_spread = partial(self.get_spread_for_seed_set, seeds = seeds)
+            get_spread_length = lambda i, seeds : len(self.get_spread_for_seed_set(i, seeds))
+            partial_get_spread = partial(get_spread_length, seeds = seeds)
             with Multipool(processes = num_sample_cpus) as pool:
                 spreads = pool.map(partial_get_spread,
                                    list(range(first_eval_sparsified_graph_id, first_eval_sparsified_graph_id + sample_size)))
