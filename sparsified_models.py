@@ -89,7 +89,9 @@ class ContagionModel(object):
         else:
             partial_eval_seeds = partial(self.evaluate_seeds, sample_size = sample_size)
             with Multipool(processes = num_seed_sample_cpus) as pool:
-                all_spreads = pool.map(partial_eval_seeds, graph_id_list)
+                spread_lists = pool.map(partial_eval_seeds, graph_id_list)
+            for spread_list in spread_lists:
+                all_spreads += spread_list
 
         return np.mean(all_spreads), np.std(all_spreads), np.sum([spread < 10 for spread in all_spreads])
 
