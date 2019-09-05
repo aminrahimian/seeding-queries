@@ -5,7 +5,7 @@
 #SBATCH --mem-per-cpu=4G
 #SBATCH --partition=sched_mit_sloan_batch
 #SBATCH --time=4-00:00:00
-#SBATCH --array=11-20
+#SBATCH --array=11-12
 
 #SBATCH -o /home/sanzeed/seeding_queries/dump_sparsified_graphs.out
 #SBATCH -e /home/sanzeed/seeding_queries/dump_sparsified_graphs.err
