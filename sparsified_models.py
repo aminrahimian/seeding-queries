@@ -138,7 +138,7 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
                     candidate_score[node] = candidate_score.get(node, 0) + 1
 
             print('=======================')
-            print(candidate_score)
+            print(spreads)
             seeds.append(max(candidate_score, key = lambda node : candidate_score[node]))
 
         del(all_spreads)
