@@ -125,6 +125,7 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
     def seed(self, first_sparsified_graph_id):
         all_spreads = self.query(first_sparsified_graph_id)
         seeds = []
+        seed_candidates = set(self.params['network'].nodes())
 
         for i in range(self.params['k']):
             spreads = all_spreads[i]
@@ -132,16 +133,17 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
                 if len(spreads[j].intersection(set(seeds))) != 0:
                     spreads[j] = set()
         
-            candidate_score = {}
+            candidate_score = {candidate : 0 for candidate in seed_candidates}
             for spread in spreads:
                 for node in spread:
-                    candidate_score[node] = candidate_score.get(node, 0) + 1
+                    candidate_score[node] += 1
 
-            print('=======================')
-            print(spreads)
-            seeds.append(max(candidate_score, key = lambda node : candidate_score[node]))
+            new_seed = max(candidate_score, key = lambda node : candidate_score[node])
+            seeds.append(new_seed)
+            seed_candidates.remove(new_seed)
 
         del(all_spreads)
+        del(seed_candidates)
         return seeds
 
 
