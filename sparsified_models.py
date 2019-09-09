@@ -79,7 +79,7 @@ class ContagionModel(object):
                        num_seed_sample_cpus = 4, MULTIPROCESS_SEED_SAMPLE = True,
                        num_sample_cpus = 7, MULTIPROCESS_SAMPLE = True):
         sparsified_graph_id = self.params['sparsified_graph_id']
-        graph_id_interval = self.params['k'] * int(self.params['rho'])
+        graph_id_interval = self.params['k'] * int(self.params['max_rho'])
         graph_id_list = [sparsified_graph_id + i * graph_id_interval for i in range(seed_sample_size)]
         all_spreads = []
 
