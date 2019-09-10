@@ -5,7 +5,7 @@
 #SBATCH --mem-per-cpu=4G
 #SBATCH --partition=sched_mit_sloan_sinana
 #SBATCH --time=4-00:00:00
-#SBATCH --array=1-10
+#SBATCH --array=1-14
 
 #SBATCH -o /home/sanzeed/seeding_queries/analyzing_spread_query_performance_given_cost.out
 #SBATCH -e /home/sanzeed/seeding_queries/analyzing_spread_query_performance_given_cost.err
