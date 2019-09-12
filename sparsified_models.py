@@ -85,9 +85,15 @@ class ContagionModel(object):
 
         if not MULTIPROCESS_SEED_SAMPLE:
             for graph_id in graph_id_list:
-                all_spreads += self.evaluate_seeds(graph_id, sample_size = sample_size)
+                all_spreads += self.evaluate_seeds(graph_id, 
+                                                   sample_size = sample_size,
+                                                   num_sample_cpus = num_sample_cpus,
+                                                   MULTIPROCESS_SAMPLE = MULTIPROCESS_SAMPLE)
         else:
-            partial_eval_seeds = partial(self.evaluate_seeds, sample_size = sample_size)
+            partial_eval_seeds = partial(self.evaluate_seeds, 
+                                         sample_size = sample_size,
+                                         num_sample_cpus = num_sample_cpus,
+                                         MULTIPROCESS_SAMPLE = MULTIPROCESS_SAMPLE)
             with Multipool(processes = num_seed_sample_cpus) as pool:
                 spread_lists = pool.map(partial_eval_seeds, graph_id_list)
             for spread_list in spread_lists:
