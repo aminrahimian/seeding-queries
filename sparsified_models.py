@@ -131,7 +131,6 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
     def seed(self, first_sparsified_graph_id):
         all_spreads = self.query(first_sparsified_graph_id)
         seeds = []
-        seed_candidates = set(self.params['network'].nodes())
 
         for i in range(self.params['k']):
             spreads = all_spreads[i]
@@ -139,17 +138,26 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
                 if len(spreads[j].intersection(set(seeds))) != 0:
                     spreads[j] = set()
         
-            candidate_score = {candidate : 0 for candidate in seed_candidates}
+            candidate_score = {}
             for spread in spreads:
                 for node in spread:
-                    candidate_score[node] += 1
+                    candidate_score[node] = candidate_score.get(node, 0) + 1
 
-            new_seed = max(candidate_score, key = lambda node : candidate_score[node])
-            seeds.append(new_seed)
-            seed_candidates.remove(new_seed)
+            if len(candidate_score) == 0:
+                for sampled_node in self.params['sampled_nodes'][:int(self.params['rho'])]:
+                    if sampled_node not in seeds:
+                        seeds.append(sampled_node)
+            else:
+                candidate_by_score = {}
+                for candidate in candidate_score:
+                    if candidate_score[candidate] not in candidate_by_score:
+                        candidate_by_score[candidate_score[candidate]] = set()
+                    candidate_by_score[candidate_score[candidate]].add(candidate)
+                max_score = max(candidate_by_score)
+                new_seed = max(candidate_by_score[max_score], key = lambda x : int(x))
+                seeds.append(new_seed)
 
         del(all_spreads)
-        del(seed_candidates)
         return seeds
 
 
