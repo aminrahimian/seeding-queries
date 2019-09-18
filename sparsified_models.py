@@ -144,9 +144,10 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
                     candidate_score[node] = candidate_score.get(node, 0) + 1
 
             if len(candidate_score) == 0:
-                for sampled_node in self.params['sampled_nodes'][:int(self.params['rho'])]:
+                for sampled_node in self.params['sampled_nodes'][i][:int(self.params['rho'])]:
                     if sampled_node not in seeds:
                         seeds.append(sampled_node)
+                        break
             else:
                 candidate_by_score = {}
                 for candidate in candidate_score:
