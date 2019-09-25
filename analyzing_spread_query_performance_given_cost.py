@@ -76,13 +76,12 @@ def analyze_cost_vs_performance(query_cost_id):
     tau = 0.9 * network_size
     query_cost = query_costs[query_cost_id]
     rho = query_cost / k
-    max_rho = max(query_costs) / k
 
     sparsified_graph_id = 100000
     eval_sparsified_graph_id = 119500
     sample_nodes = pickle.load(open(root_data_address
                                     + 'sampled_nodes/'
-                                    + 'fb100_sampled_nodes_Penn94.pkl', 'rb'))
+                                    + 'fb100_spread_query_sampled_nodes_Penn94.pkl', 'rb'))
 
     params_original = {
         'network': G,
@@ -98,7 +97,7 @@ def analyze_cost_vs_performance(query_cost_id):
         'eps' : eps,
         'eps_prime' : eps_prime,
         'rho' : rho,
-        'max_rho' : max_rho,
+        'graph_id_interval' : max(query_costs),
         'sparsified_graph_id' : sparsified_graph_id,
         'eval_sparsified_graph_id' : eval_sparsified_graph_id,
         'sampled_nodes' : sample_nodes,

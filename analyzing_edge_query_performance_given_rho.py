@@ -1,4 +1,4 @@
-from models import *
+from sparsified_models import *
 
 from pathlib import Path
 
@@ -17,21 +17,26 @@ VERBOSE = True
 
 CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
+MULTIPROCESS_SEED_SAMPLE = True
+
 MULTIPROCESS_SAMPLE = True
 
 network_id = 'Penn94'
 
-sample_size = 100
+seed_sample_size = 50
 
-num_sample_cpus = 28
+sample_size = 500
+
+num_seed_sample_cpus = 4
+
+num_sample_cpus = 7
 
 CAP = 0.9
 
-rhos = [0.01, 0.05,0.1]
+Ts = list(range(11))
 
-rho_id_list = query_cost_id_list 
         
-def analyze_cost_vs_performance(rho_id):
+def analyze_cost_vs_performance(query_cost_id):
     #  load in the network and extract preliminary data
     fh = open(edgelist_directory_address + network_group + network_id + '.txt', 'rb')
     G = NX.read_edgelist(fh, delimiter=DELIMITER)
@@ -64,14 +69,25 @@ def analyze_cost_vs_performance(rho_id):
     eps = 0.2
     a = 0.95
     eps_prime = 2 * eps * (1 + a * (1 - eps))
-    T = int (3 * (delta + np.log(2)) * (k+1) * np.log(network_size) / (eps * eps))
     tau = np.log(1 / eps) * network_size / (eps * k)
+    rho = 10
+    T = Ts[query_cost_id]
 
-    rho = rhos[rho_id]
+    sampled_nodes = pickle.load(open(root_data_address
+                                    + 'sampled_nodes/'
+                                    + 'fb100_edge_query_sampled_nodes_Penn94.pkl', 'rb'))
+    sampled_nodes = sorted(sampled_nodes, key = lambda elt : int(elt))
+    candidate_nodes = pickle.load(open(root_data_address
+                                    + 'sampled_nodes/'
+                                    + 'fb100_edge_query_candidate_nodes_Penn94.pkl', 'rb'))  
 
+    sparsified_graph_id = 100000
+    eval_sparsified_graph_id = 119500
+    
     params_original = {
         'network': G,
         'original_network': G,
+        'network_id': network_id,
         'size': network_size,
         'add_edges': False,
         'k': k,
@@ -84,6 +100,11 @@ def analyze_cost_vs_performance(rho_id):
         'rho' : rho,
         'T' : T,
         'tau' : tau,
+        'sampled_nodes' : sampled_nodes,
+        'candidate_nodes' : candidate_nodes,
+        'sparsified_graph_id' : sparsified_graph_id,
+        'eval_sparsified_graph_id' : eval_sparsified_graph_id,
+        'graph_id_interval' : T,
         'memory': memory,
         'rewire': False,
         'rewiring_mode': 'random_random',
@@ -96,30 +117,30 @@ def analyze_cost_vs_performance(rho_id):
         print('model_id is not valid')
         exit()
 
-    spread_results = dynamics.get_cost_vs_performance(cap = CAP, 
-                                                      sample_size = sample_size, 
-                                                      multiprocess = MULTIPROCESS_SAMPLE, 
-                                                      num_sample_cpus = num_sample_cpus)
+    spread_results = dynamics.evaluate_model(seed_sample_size = seed_sample_size, 
+                                             sample_size = sample_size, 
+                                             num_seed_sample_cpus = num_seed_sample_cpus, 
+                                             MULTIPROCESS_SEED_SAMPLE = MULTIPROCESS_SAMPLE, 
+                                             num_sample_cpus = num_sample_cpus, 
+                                             MULTIPROCESS_SAMPLE = MULTIPROCESS_SEED_SAMPLE)
 
     if VERBOSE:
         print('================================================', "\n",
-              'rho: ', rho, "\n",
-              'spread size: ', spread_results[0], "\n",
-              'node discovery query cost: ', spread_results[3], "\n", 
-              'edge discovery query cost: ', [5], "\n",
+              np.mean(spread_results), np.std(spread_results), "\n",
               '================================================')
 
     if save_computations:
-        seeding_model_folder = "/edge_query/"
+        seeding_model_folder = "/edge_query/" + network_id + "/"
         data_dump_folder = (spreading_pickled_samples_directory_address
+                                                + 'k_' + str(k)
                                                 + seeding_model_folder)
         os.makedirs(os.path.dirname(data_dump_folder), exist_ok = True)
 
         pickle.dump(spread_results, open(data_dump_folder
-                                         + 'spread_size_samples_'
-                                         + 'k_' + str(k) + '_'
-                                         + 'rho_' + str(rho) + '_'
-                                         + 'sample_size_' + str(sample_size) + '.pkl', 'wb'))
+                                              + 'spread_size_samples_'
+                                              + network_group + network_id
+                                              + '_T_' + str(T)
+                                              + model_id + '.pkl', 'wb'))
 
 
 if __name__ == '__main__':
@@ -129,10 +150,10 @@ if __name__ == '__main__':
     if do_multiprocessing:
         with Multipool(processes=number_CPU) as pool:
 
-            pool.map(analyze_cost_vs_performance, rho_id_list)
+            pool.map(analyze_cost_vs_performance, query_cost_id_list)
 
     else:  # no multi-processing
         # do computations for the original networks:
 
-        for rho_id in rho_id_list:
-            analyze_cost_vs_performance(rho_id)
+        for query_cost_id in query_cost_id_list:
+            analyze_cost_vs_performance(query_cost_id)

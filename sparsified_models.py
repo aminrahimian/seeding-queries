@@ -79,7 +79,7 @@ class ContagionModel(object):
                        num_seed_sample_cpus = 4, MULTIPROCESS_SEED_SAMPLE = True,
                        num_sample_cpus = 7, MULTIPROCESS_SAMPLE = True):
         sparsified_graph_id = self.params['sparsified_graph_id']
-        graph_id_interval = self.params['k'] * int(self.params['max_rho'])
+        graph_id_interval = self.params['graph_id_interval']
         graph_id_list = [sparsified_graph_id + i * graph_id_interval for i in range(seed_sample_size)]
         all_spreads = []
 
@@ -99,7 +99,7 @@ class ContagionModel(object):
             for spread_list in spread_lists:
                 all_spreads += spread_list
 
-        return np.mean(all_spreads), np.std(all_spreads), np.sum([spread < 10 for spread in all_spreads])
+        return all_spreads
 
 
 class IndependentCascade(ContagionModel):
@@ -118,7 +118,7 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
         for i in range(self.params['k']):
             spreads = []
             infected_nodes = sampled_nodes[i][:int(self.params['rho'])]
-            sparsified_graph_id = first_sparsified_graph_id + i * int(self.params['max_rho'])
+            sparsified_graph_id = first_sparsified_graph_id + i * int(self.params['graph_id_interval'] / self.params['k'])
 
             for node in infected_nodes:
                 spreads.append(self.spread(node, sparsified_graph_id))
@@ -167,9 +167,8 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
         super(IndependentCascadeEdgeQuerySeeding, self).__init__(params)
 
     def query(self, first_sparsified_graph_id):
-        sampled_nodes = np.random.choice(list(self.params['network'].nodes()),
-                                         size = int(self.params['rho']),
-                                         replace = False)
+        sampled_nodes = self.params['sampled_nodes'][:int(self.params['rho'])]
+        
         all_spreads = []
         spread_scores = []
         sparsified_graph_id = first_sparsified_graph_id
@@ -194,17 +193,28 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
         seeds = []
 
         for i in range(self.params['k']):
-            candidate_nodes = set(np.random.choice(list(self.params['network'].nodes()),
-                                                   size = candidate_sample_size,
-                                                   replace = False))
+            candidate_nodes = self.params['candidate_nodes'][:int(candidate_sample_size)]
 
             candidate_scores = {}
             for j in range(len(all_spreads)):
                 for node in all_spreads[j]:
                     if node in candidate_nodes:
                         candidate_scores[node] = candidate_scores.get(node, 0) + spread_scores[j]
-
-            new_seed = max(candidate_scores, key = lambda node : candidate_scores[node])
+            
+            if len(candidate_scores) == 0:
+               for node in candidate_nodes:
+                   if node not in seeds:
+                       new_seed = node
+                       break
+            else:
+                candidate_by_score = {}
+                for candidate in candidate_scores:
+                    if candidate_scores[candidate] not in candidate_by_score:
+                        candidate_by_score[candidate_scores[candidate]] = set()
+                    candidate_by_score[candidate_scores[candidate]].add(candidate)
+                max_score = max(candidate_by_score)
+                new_seed = max(candidate_by_score[max_score], key = lambda x : int(x))
+            
             seeds.append(new_seed)
             for j in range(len(all_spreads)):
                 if new_seed in all_spreads[j]:
