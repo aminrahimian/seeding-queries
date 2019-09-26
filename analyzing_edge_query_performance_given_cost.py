@@ -98,7 +98,7 @@ def analyze_cost_vs_performance(query_cost_id):
         'eps' : eps,
         'eps_prime' : eps_prime,
         'rho' : rho,
-        'T' : T,
+        'T' : max(T),
         'tau' : tau,
         'sampled_nodes' : sampled_nodes,
         'candidate_nodes' : candidate_nodes,
