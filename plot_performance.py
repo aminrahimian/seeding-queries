@@ -118,6 +118,24 @@ plt.close()
 
 # spread size versus edge query cost
 
+
+T2s = list(range(1,15))
+
+spreads2 = []
+
+for T in T2s:
+    spread2 = pickle.load(open(
+        './data/fb100-data/pickled_samples/spreading_pickled_samples/k_2/edge_query/Penn94/spread_size_samples_fb100_edgelist_Penn94_T_'
+        + str(T) + '_vanilla IC_.pkl', 'rb'))
+    spreads2.append((np.mean(spread2), np.std(spread2)))
+
+y2 = [s[0] for s in spreads2]
+
+for s in spreads2:
+    print(s)
+ci2 = [1.96 * s[1] / 25000 ** 0.5 for s in spreads2]
+
+
 T4s = list(range(1,15))
 spreads4 = []
 for T in T4s:
@@ -132,7 +150,7 @@ for s in spreads4:
     print(s)
 ci4 = [1.96 * s[1] / 25000 ** 0.5 for s in spreads4]
 
-T10s = list(range(1,4))
+T10s = list(range(1,15))
 spreads10 = []
 for T in T10s:
     spread10 = pickle.load(open(
@@ -149,6 +167,7 @@ ci10 = [1.96 * s[1] / 25000 ** 0.5 for s in spreads10]
 
 
 fig = plt.figure()
+plt.errorbar(T2s, y2, ci2, label="k=2", color = colors[2])
 plt.errorbar(T4s, y4, ci4, label="k=4", color = colors[4])
 plt.errorbar(T10s, y10, ci10, label="k=10", color = colors[10])
 
