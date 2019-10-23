@@ -65,6 +65,7 @@ plt.legend()
 plt.xlabel("query cost")
 plt.ylabel("spread size")
 
+os.makedirs(os.path.dirname('./figures/spread_size_vs_spread_query.pdf'), exist_ok = True)
 fig.savefig('./figures/spread_size_vs_spread_query.pdf',
                 bbox_inches = 'tight')
 plt.close()
@@ -178,6 +179,7 @@ plt.legend()
 plt.xlabel("T")
 plt.ylabel("spread size")
 
+os.makedirs(os.path.dirname('./figures/spread_size_vs_edge_query.pdf'), exist_ok = True)
 fig.savefig('./figures/spread_size_vs_edge_query.pdf',
                 bbox_inches = 'tight')
 plt.close()
