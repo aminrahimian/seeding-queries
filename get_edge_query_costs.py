@@ -96,17 +96,17 @@ def get_costs_for_given_T(T_id):
             costs = pool.map(partial_get_costs, graph_ids)
 
     if save_computations:
-    seeding_model_folder = "/edge_query/" + network_id + "/"
-    data_dump_folder = (spreading_pickled_samples_directory_address
-                                            + 'k_' + str(k)
-                                            + seeding_model_folder)
-    os.makedirs(os.path.dirname(data_dump_folder), exist_ok = True)
+        seeding_model_folder = "/edge_query/" + network_id + "/"
+        data_dump_folder = (spreading_pickled_samples_directory_address
+                                                + 'k_' + str(k)
+                                                + seeding_model_folder)
+        os.makedirs(os.path.dirname(data_dump_folder), exist_ok = True)
 
-    pickle.dump(spread_results, open(data_dump_folder
-                                            + 'cost_samples_'
-                                            + network_group + network_id
-                                            + '_T_' + str(T)
-                                            + model_id + '.pkl', 'wb'))
+        pickle.dump(spread_results, open(data_dump_folder
+                                                + 'cost_samples_'
+                                                + network_group + network_id
+                                                + '_T_' + str(T)
+                                                + model_id + '.pkl', 'wb'))
 
 
 if __name__ == '__main__':
