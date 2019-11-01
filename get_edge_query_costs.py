@@ -46,14 +46,14 @@ def get_sample_spreads(sampled_nodes, graph_id, T):
 def get_costs(graph_id, G, sampled_nodes, T):
     all_spreads = get_sample_spreads(sampled_nodes, graph_id, T)
 
-    edge_cost = 0
-    node_cost = 0
+    edge_cost = set()
+    node_cost = set()
     for spread in all_spreads:
         subgraph = G.subgraph(list(spread))
-        edge_cost += len(subgraph.edges())
-        node_cost += len(subgraph.nodes())
+        edge_cost.update(set(subgraph.edges()))
+        node_cost.update(set(subgraph.nodes()))
 
-    return (edge_cost, node_cost)
+    return (len(edge_cost), len(node_cost))
 
 
 def get_costs_for_given_T(T_id):
