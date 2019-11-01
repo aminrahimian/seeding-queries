@@ -1,3 +1,4 @@
+from settings import *
 from pathlib import Path
 import numpy as np
 from functools import partial
@@ -56,7 +57,7 @@ def get_costs(graph_id, G, sampled_nodes, T):
 
 
 def get_costs_for_given_T(T_id):
-    T = Ts(T_id)
+    T = Ts[T_id]
 
     #  load in the network and extract preliminary data
     fh = open(edgelist_directory_address + network_group + network_id + '.txt', 'rb')
