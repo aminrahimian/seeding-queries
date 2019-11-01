@@ -78,14 +78,15 @@ def get_costs_for_given_T(T_id):
     print('network id', network_id, 'original')
     print('network size', network_size)
 
-    sampled_nodes = pickle.load(open(root_data_address
-                                    + 'sampled_nodes/'
-                                    + 'fb100_edge_query_sampled_nodes_Penn94.pkl', 'rb'))
-    sampled_nodes = sorted(sampled_nodes, key = lambda elt : int(elt))[:int(rho)]
     first_graph_id = 100000
     rho = 10
     interval = max(Ts)
     costs = []
+    sampled_nodes = pickle.load(open(root_data_address
+                                + 'sampled_nodes/'
+                                + 'fb100_edge_query_sampled_nodes_Penn94.pkl', 'rb'))
+    sampled_nodes = sorted(sampled_nodes, key = lambda elt : int(elt))[:int(rho)]
+
 
     graph_ids = [first_graph_id + i * interval for i in range(seed_sample_size)]
     if not MULTIPROCESS:
