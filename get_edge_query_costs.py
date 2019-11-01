@@ -104,7 +104,7 @@ def get_costs_for_given_T(T_id):
                                                 + seeding_model_folder)
         os.makedirs(os.path.dirname(data_dump_folder), exist_ok = True)
 
-        pickle.dump(spread_results, open(data_dump_folder
+        pickle.dump(costs, open(data_dump_folder
                                                 + 'cost_samples_'
                                                 + network_group + network_id
                                                 + '_T_' + str(T)
