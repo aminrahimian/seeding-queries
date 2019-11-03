@@ -185,8 +185,8 @@ fig.savefig('./figures/spread_size_vs_edge_query.pdf',
 plt.close()
 
 fig = plt.figure()
-fig.set_figwidth(8)
-fig.set_figheight(8)
+fig.set_figwidth(7)
+fig.set_figheight(6)
 
 for T in range(1, 16):
     spreads2 = pickle.load(open('./data/fb100-data/pickled_samples/spreading_pickled_samples/k_2/edge_query/Penn94/'
@@ -198,15 +198,15 @@ for T in range(1, 16):
     node_costs2 = [cost[1] for cost in costs2]
     plt.plot(node_costs2, spreads2, linestyle = 'None', marker = 'o', color=colors[2])#, label = 'T='+str(T)
     # plt.legend()
-    plt.xlabel('nodes revealed', fontsize=20, labelpad=10)
-    plt.ylabel('mean spread size', fontsize=20, labelpad=10)
+    plt.xlabel('nodes revealed')#, fontsize=20, labelpad=10)
+    plt.ylabel('mean spread size')#, fontsize=20, labelpad=10)
 
 fig.savefig('./figures/spread_size_vs_nodes_queried_scatter_k_2.pdf', bbox_inches = 'tight')
 plt.close()
 
 fig = plt.figure()
-fig.set_figwidth(8)
-fig.set_figheight(8)
+fig.set_figwidth(7)
+fig.set_figheight(6)
 
 for T in range(1, 16):
     spreads2 = pickle.load(open('./data/fb100-data/pickled_samples/spreading_pickled_samples/k_2/edge_query/Penn94/'
@@ -218,16 +218,16 @@ for T in range(1, 16):
     edge_costs2 = [cost[0] for cost in costs2]
     plt.plot(edge_costs2, spreads2, linestyle='None', marker='o', color=colors[2])#, label='T=' + str(T)
     # plt.legend()
-    plt.xlabel('edges revealed', fontsize=20, labelpad=10)
-    plt.ylabel('mean spread size', fontsize=20, labelpad=10)
+    plt.xlabel('edges revealed')#, fontsize=20, labelpad=10)
+    plt.ylabel('mean spread size')#, fontsize=20, labelpad=10)
 
 fig.savefig('./figures/spread_size_vs_edges_queried_scatter_k_2.pdf', bbox_inches='tight')
 plt.close()
 
 
 fig = plt.figure()
-fig.set_figwidth(8)
-fig.set_figheight(8)
+fig.set_figwidth(7)
+fig.set_figheight(6)
 
 for T in range(1, 16):
     spreads4 = pickle.load(open('./data/fb100-data/pickled_samples/spreading_pickled_samples/k_4/edge_query/Penn94/'
@@ -239,15 +239,15 @@ for T in range(1, 16):
     node_costs4 = [cost[1] for cost in costs4]
     plt.plot(node_costs4, spreads4, linestyle = 'None', marker = 'o', color=colors[4])#, label = 'T='+str(T)
     # plt.legend()
-    plt.xlabel('nodes revealed', fontsize = 20, labelpad = 10)
-    plt.ylabel('mean spread size', fontsize = 20, labelpad = 10)
+    plt.xlabel('nodes revealed')#, fontsize = 20, labelpad = 10)
+    plt.ylabel('mean spread size')#, fontsize = 20, labelpad = 10)
 
 fig.savefig('./figures/spread_size_vs_nodes_queried_scatter_k_4.pdf', bbox_inches = 'tight')
 plt.close()
 
 fig = plt.figure()
-fig.set_figwidth(8)
-fig.set_figheight(8)
+fig.set_figwidth(7)
+fig.set_figheight(6)
 
 for T in range(1, 16):
     spreads4 = pickle.load(open('./data/fb100-data/pickled_samples/spreading_pickled_samples/k_4/edge_query/Penn94/'
@@ -259,17 +259,15 @@ for T in range(1, 16):
     edge_costs4 = [cost[0] for cost in costs4]
     plt.plot(edge_costs4, spreads4, linestyle='None', marker='o', color=colors[4])#, label='T=' + str(T)
     # plt.legend()
-    plt.xlabel('edges revealed', fontsize=20, labelpad=10)
-    plt.ylabel('mean spread size', fontsize=20, labelpad=10)
+    plt.xlabel('edges revealed')#, fontsize=20, labelpad=10)
+    plt.ylabel('mean spread size')#, fontsize=20, labelpad=10)
 
 fig.savefig('./figures/spread_size_vs_edges_queried_scatter_k_4.pdf', bbox_inches='tight')
 plt.close()
 
-
-
 fig = plt.figure()
-fig.set_figwidth(8)
-fig.set_figheight(8)
+fig.set_figwidth(7)
+fig.set_figheight(6)
 
 for T in range(1, 16):
     spreads10 = pickle.load(open('./data/fb100-data/pickled_samples/spreading_pickled_samples/k_10/edge_query/Penn94/'
@@ -281,15 +279,15 @@ for T in range(1, 16):
     node_costs10 = [cost[1] for cost in costs10]
     plt.plot(node_costs10, spreads10, linestyle = 'None', marker = 'o', color=colors[10])#, label = 'T='+str(T)
     # plt.legend()
-    plt.xlabel('nodes revealed', fontsize=20, labelpad=10)
-    plt.ylabel('mean spread size', fontsize=20, labelpad=10)
+    plt.xlabel('nodes revealed')#, fontsize=20, labelpad=10)
+    plt.ylabel('mean spread size')#, fontsize=20, labelpad=10)
 
 fig.savefig('./figures/spread_size_vs_nodes_queried_scatter_k_10.pdf', bbox_inches='tight')
 plt.close()
 
 fig = plt.figure()
-fig.set_figwidth(8)
-fig.set_figheight(8)
+fig.set_figwidth(7)
+fig.set_figheight(6)
 
 for T in range(1, 16):
     spreads10 = pickle.load(open('./data/fb100-data/pickled_samples/spreading_pickled_samples/k_10/edge_query/Penn94/'
@@ -301,12 +299,11 @@ for T in range(1, 16):
     edge_costs10 = [cost[0] for cost in costs10]
     plt.plot(edge_costs10, spreads10, linestyle='None', marker='o', color=colors[10])#, label='T=' + str(T)
     # plt.legend()
-    plt.xlabel('edges revealed', fontsize=20, labelpad=10)
-    plt.ylabel('mean spread size', fontsize=20, labelpad=10)
+    plt.xlabel('edges revealed')#, fontsize=20, labelpad=10)
+    plt.ylabel('mean spread size')#, fontsize=20, labelpad=10)
 
 fig.savefig('./figures/spread_size_vs_edges_queried_scatter_k_10.pdf', bbox_inches='tight')
 plt.close()
-
 
 for T in range(1, 16):
     spreads10 = pickle.load(open('./data/fb100-data/pickled_samples/spreading_pickled_samples/k_10/edge_query/Penn94/'
@@ -318,15 +315,15 @@ for T in range(1, 16):
     node_costs10 = [cost[1] for cost in costs10]
     plt.plot(node_costs10, spreads10, linestyle = 'None', marker = 'o', color=colors[10])#, label = 'T='+str(T)
     # plt.legend()
-    plt.xlabel('nodes revealed', fontsize=20, labelpad=10)
-    plt.ylabel('mean spread size', fontsize=20, labelpad=10)
+    plt.xlabel('nodes revealed')#, fontsize=20, labelpad=10)
+    plt.ylabel('mean spread size')#, fontsize=20, labelpad=10)
 
 fig.savefig('./figures/spread_size_vs_nodes_queried_scatter_k_10.pdf', bbox_inches='tight')
 plt.close()
 
 fig = plt.figure()
-fig.set_figwidth(8)
-fig.set_figheight(8)
+fig.set_figwidth(7)
+fig.set_figheight(6)
 
 for T in range(1, 16):
     spreads2 = pickle.load(open('./data/fb100-data/pickled_samples/spreading_pickled_samples/k_2/edge_query/Penn94/'
@@ -358,16 +355,16 @@ for T in range(1, 16):
     plt.plot(edge_costs4, spreads4, linestyle='None', marker='o', color=colors[4], label='k=4')  # , label='T=' + str(T)
     plt.plot(edge_costs10, spreads10, linestyle='None', marker='o', color=colors[10], label='k=10')#, label='T=' + str(T)
     plt.legend(['k=2','k=4','k=10'])
-    plt.xlabel('edges revealed', fontsize=20, labelpad=10)
-    plt.ylabel('mean spread size', fontsize=20, labelpad=10)
+    plt.xlabel('edges revealed')#, fontsize=20, labelpad=10)
+    plt.ylabel('mean spread size')#, fontsize=20, labelpad=10)
 
 fig.savefig('./figures/spread_size_vs_edges_queried_scatter.pdf', bbox_inches='tight')
 plt.close()
 
 
 fig = plt.figure()
-fig.set_figwidth(8)
-fig.set_figheight(8)
+fig.set_figwidth(7)
+fig.set_figheight(6)
 
 for T in range(1, 16):
     spreads2 = pickle.load(open('./data/fb100-data/pickled_samples/spreading_pickled_samples/k_2/edge_query/Penn94/'
@@ -399,8 +396,8 @@ for T in range(1, 16):
     plt.plot(node_costs4, spreads4, linestyle='None', marker='o', color=colors[4], label='k=4')  # , label='T=' + str(T)
     plt.plot(node_costs10, spreads10, linestyle='None', marker='o', color=colors[10], label='k=10')#, label='T=' + str(T)
     plt.legend(['k=2','k=4','k=10'])
-    plt.xlabel('nodes revealed', fontsize=20, labelpad=10)
-    plt.ylabel('mean spread size', fontsize=20, labelpad=10)
+    plt.xlabel('nodes revealed')#, fontsize=20, labelpad=10)
+    plt.ylabel('mean spread size')#, fontsize=20, labelpad=10)
 
 fig.savefig('./figures/spread_size_vs_nodes_queried_scatter.pdf', bbox_inches='tight')
 plt.close()
