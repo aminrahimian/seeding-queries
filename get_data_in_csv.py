@@ -13,7 +13,9 @@ def get_edge_query_data():
 
     with open(filename, 'w') as f:
         writer = csv.writer(f, delimiter = ',')
-        writer.writerow(['k', 'T', 'seed set id', 'sample id', 'spread size', 'edge cost', 'node cost'])
+        writer.writerow(['k', 'T', 'seed set id', 'sample id', 'spread size', 
+                         'edge cost', 'edge cost without leaves', 
+                         'node cost', 'node cost without leaves'])
 
         for k in [2, 4, 10]:
             for T in range(1,16):
@@ -31,12 +33,20 @@ def get_edge_query_data():
                                         + network_group + network_id
                                         + '_T_' + str(T)
                                         + model_id + '.pkl', 'rb'))
+                costs_without_leaves = pickle.load(open(root + 'k_' + str(k)
+                                                        + '/edge_query'
+                                                        + '/' + network_id
+                                                        + '/cost_samples_without_leaf_'
+                                                        + network_group + network_id
+                                                        + '_T_' + str(T)
+                                                        + model_id + '.pkl', 'rb'))
 
                 for seed_set_id in range(50):
                     for sample_id in range(500):
                         writer.writerow([k, T, seed_set_id, sample_id, 
                                         spreads[50 * seed_set_id + sample_id],
-                                        costs[seed_set_id][0], costs[seed_set_id][1]])
+                                        costs[seed_set_id][0], costs_without_leaves[seed_set_id][0],
+                                        costs[seed_set_id][1], costs_without_leaves[seed_set_id][1]])
 
 
 if __name__ == '__main__':
