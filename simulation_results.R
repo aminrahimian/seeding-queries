@@ -1,3 +1,4 @@
+#need R > 3.5
 library(readr)
 library(dplyr)
 library(estimatr)
@@ -164,3 +165,4 @@ ggplot(
   theme(legend.position = c(0.9, 0.25))
 
 ggsave("figures/edge_queries_spread_size_by_edges_and_nodes_queried.pdf", width = 4.5, height = 3.5)
+
