@@ -5,12 +5,20 @@ library(estimatr)
 library(ggplot2)
 theme_set(theme_bw())
 library(scales)
+library(RColorBrewer)
 
 
-ed = readr::read_csv("data/edge_query.csv")
+ed = readr::read_csv("data/edge_query_no_T_0.csv")
 names(ed) = tolower(names(ed))
 names(ed) = gsub(" ", "_", names(ed))
 names(ed) = gsub("_without_leaves", "_wol", names(ed))
+
+
+k_colors <- c(
+  "2" = brewer.pal(8, "Set1")[5],
+  "4" = "blue",#brewer.pal(8, "Set1")[2],
+  "10" = brewer.pal(8, "Set1")[1]
+)
 
 penn_max_nodes = 41536
 penn_max_edges = 1362220
@@ -44,9 +52,9 @@ edss = eds %>%
     edge_cost_mean_se = sd(edge_cost_percent) / sqrt(n())
   )
 
-k_colors <- scales::seq_gradient_pal("blue", "red", "Lab")(
-  seq(0, 1, length.out = length(unique(edss$k)))
-)
+#k_colors <- scales::seq_gradient_pal("orange","blue", "red")(
+#  seq(0, 1, length.out = length(unique(edss$k)))
+#)
 
 
 # show distribution of spread sizes
