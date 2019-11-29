@@ -8,6 +8,8 @@ import os
 
 num_cpus = 4
 num_sample_cpus = 7
+MULTIPROCESS_SEEDS = False
+MULTIPROCESS_SAMPLE = False
 
 
 def spread(node, sparsified_graph_id):
@@ -32,10 +34,14 @@ def get_total_spread(sparsified_graph_id, seeds):
     return len(spread_set)
 
 def get_all_spreads(seeds, graph_id_range):
-    partial_get_spread = partial(get_total_spread, seeds = seeds)
-
-    with Multipool(processes = num_sample_cpus) as pool:
-        spreads = pool.map(partial_get_spread, graph_id_range)
+    if MULTIPROCESS_SAMPLE:
+        partial_get_spread = partial(get_total_spread, seeds = seeds)
+        with Multipool(processes = num_sample_cpus) as pool:
+            spreads = pool.map(partial_get_spread, graph_id_range)
+    else:
+        spreads = []
+        for graph_id in graph_id_range:
+            spreads.append(get_total_spread(graph_id, seeds))
 
     return spreads
 
@@ -60,11 +66,17 @@ def generate_random_spread_data():
     print('network size', network_size)
 
     graph_id_range = list(range(119500, 120000))
-    partial_get_all_spreads = partial(get_all_spreads, graph_id_range = graph_id_range)
-
     seeds_list = [np.random.choice(G.nodes(), size = k, replace = True) for i in range(50)]
-    with Multipool(processes = num_cpus) as pool:
-        spread_collection = pool.map(partial_get_all_spreads, seeds_list)
+
+    if MULTIPROCESS_SEEDS:
+        partial_get_all_spreads = partial(get_all_spreads, graph_id_range = graph_id_range)
+
+        with Multipool(processes = num_cpus) as pool:
+            spread_collection = pool.map(partial_get_all_spreads, seeds_list)
+    else:
+        spread_collection = []
+        for seeds in seeds_list:
+            spread_collection.append(get_all_spreads(seeds, graph_id_range))
 
     if save_computations:
         seeding_model_folder = "/edge_query/" + network_id + "/"
