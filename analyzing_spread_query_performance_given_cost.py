@@ -1,4 +1,4 @@
-from models import *
+from sparsified_models import *
 
 from pathlib import Path
 
@@ -19,15 +19,21 @@ VERBOSE = True
 
 CHECK_FOR_EXISTING_PKL_SAMPLES = False
 
+MULTIPROCESS_SEED_SAMPLE = True
+
 MULTIPROCESS_SAMPLE = True
+
+seed_sample_size = 50
 
 sample_size = 500
 
-num_sample_cpus = 48
+num_seed_sample_cpus = 4
+
+num_sample_cpus = 7
 
 CAP = 0.9
 
-query_costs = [4, 8, 12, 16, 20, 24, 32, 44, 60, 80]
+query_costs = [4, 8, 12, 16, 20, 24, 32, 44, 60, 80, 104, 132, 164, 200]
 
         
 def analyze_cost_vs_performance(query_cost_id):
@@ -63,17 +69,26 @@ def analyze_cost_vs_performance(query_cost_id):
     # Running seeding and spreading simulations
     eps = 0.2
     a = 0.95
+
     eps_prime = 2 * eps * (1 + a * (1 - eps))
     T = int (3 * (delta + np.log(2)) * (k+1) * np.log(network_size) / (eps * eps))
+
     tau = 0.9 * network_size
     query_cost = query_costs[query_cost_id]
     rho = query_cost / k
+
+    sparsified_graph_id = 100000
+    eval_sparsified_graph_id = 119500
+    sample_nodes = pickle.load(open(root_data_address
+                                    + 'sampled_nodes/'
+                                    + 'fb100_spread_query_sampled_nodes_Penn94.pkl', 'rb'))
 
     params_original = {
         'network': G,
         'original_network': G,
         'size': network_size,
         'add_edges': False,
+        'network_id' : network_id,
         'k': k,
         'delta': delta,
         'alpha': alpha,
@@ -82,6 +97,10 @@ def analyze_cost_vs_performance(query_cost_id):
         'eps' : eps,
         'eps_prime' : eps_prime,
         'rho' : rho,
+        'graph_id_interval' : max(query_costs),
+        'sparsified_graph_id' : sparsified_graph_id,
+        'eval_sparsified_graph_id' : eval_sparsified_graph_id,
+        'sampled_nodes' : sample_nodes,
         'T' : T,
         'tau' : tau,
         'memory': memory,
@@ -96,10 +115,12 @@ def analyze_cost_vs_performance(query_cost_id):
         print('model_id is not valid')
         exit()
 
-    spread_size_sample = dynamics.get_cost_vs_performance(cap = CAP, 
-                                                          sample_size = sample_size,
-                                                          multiprocess = MULTIPROCESS_SAMPLE,
-                                                          num_sample_cpus = num_sample_cpus)
+    spread_size_sample = dynamics.evaluate_model(seed_sample_size = seed_sample_size, 
+                                                 sample_size = sample_size, 
+                                                 num_seed_sample_cpus = num_seed_sample_cpus, 
+                                                 MULTIPROCESS_SEED_SAMPLE = MULTIPROCESS_SAMPLE, 
+                                                 num_sample_cpus = num_sample_cpus, 
+                                                 MULTIPROCESS_SAMPLE = MULTIPROCESS_SEED_SAMPLE)
 
     if VERBOSE:
         print('================================================', "\n",
@@ -107,17 +128,17 @@ def analyze_cost_vs_performance(query_cost_id):
               '================================================')
 
     if save_computations:
-        seeding_model_folder = "/spread_query/"
+        seeding_model_folder = "/spread_query/Penn94/"
         data_dump_folder = (spreading_pickled_samples_directory_address
+                                                + 'k_' + str(k)
                                                 + seeding_model_folder)
         os.makedirs(os.path.dirname(data_dump_folder), exist_ok = True)
 
         pickle.dump(spread_size_sample, open(data_dump_folder
                                               + 'spread_size_samples_'
-                                              + 'k_' + str(k) + '_'
+                                              + network_group + network_id
                                               + '_query_cost_' + str(query_cost)
-                                              + '_sample_size_' + str(sample_size)
-                                              + '.pkl', 'wb'))
+                                              + model_id + '.pkl', 'wb'))
 
 if __name__ == '__main__':
 

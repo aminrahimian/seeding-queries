@@ -171,7 +171,7 @@ if model_id == '_vanilla IC_':
     gamma = 1.0
     delta = 0.0
     beta = 0.01
-    k = 2
+    k = 4
 else:
     print('model_id is not valid')
     exit()
@@ -274,6 +274,14 @@ if 'SLURM_ARRAY_TASK_ID' in os.environ:
     QUERY_COST_ID = int(os.environ['SLURM_ARRAY_TASK_ID']) - 1
     query_cost_id_list = [QUERY_COST_ID]
     print('QUERY_COST_ID_LIST:', query_cost_id_list)
+
+# batch_id_list = [11]
+
+# if 'SLURM_ARRAY_TASK_ID' in os.environ:
+#     print('SLURM_ARRAY_TASK_ID: ' + str(os.environ['SLURM_ARRAY_TASK_ID']))
+#     BATCH_ID = int(os.environ['SLURM_ARRAY_TASK_ID']) - 1
+#     batch_id_list = [BATCH_ID]
+#     print('BATCH_ID_LIST:', BATCH_ID)
 
 # theory simulations settings:
 
