@@ -18,6 +18,22 @@ def get_edge_query_data():
                          'node cost', 'node cost without leaves'])
 
         for k in [2, 4, 10]:
+            random_spread = pickle.load(open(root + 'k_' + str(k)
+                                              + '/edge_query'
+                                              + '/' + network_id
+                                              + '/random_spread_size_samples_'
+                                              + network_group + network_id
+                                              + model_id + '.pkl', 'rb'))
+            random_cost = [(0, 0) for i in range(50)]
+
+            for seed_set_id in range(50):
+                for sample_id in range(500):
+                    writer.writerow([k, 0, seed_set_id, sample_id, 
+                                    random_spread[seed_set_id][sample_id],
+                                    random_cost[seed_set_id][0], random_cost[seed_set_id][0],
+                                    random_cost[seed_set_id][1], random_cost[seed_set_id][1]])
+            
+
             for T in range(1,16):
                 spreads = pickle.load(open(root + 'k_' + str(k)
                                         + '/edge_query'

@@ -188,18 +188,16 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
         return all_spreads, spread_scores
 
     def seed(self, first_sparsified_graph_id):
-        candidate_sample_size = int((self.params['size'] / self.params['k']) * np.log(1 / self.params['eps_prime']))
         all_spreads, spread_scores = self.query(first_sparsified_graph_id)
         seeds = []
+        order_id = int((first_sparsified_graph_id - self.params['sparsified_graph_id']) / self.params['graph_id_interval'])
+        candidate_nodes = self.params['candidate_nodes'][order_id]
 
         for i in range(self.params['k']):
-            candidate_nodes = self.params['candidate_nodes'][:int(candidate_sample_size)]
-
             candidate_scores = {}
             for j in range(len(all_spreads)):
                 for node in all_spreads[j]:
-                    if node in candidate_nodes:
-                        candidate_scores[node] = candidate_scores.get(node, 0) + spread_scores[j]
+                    candidate_scores[node] = candidate_scores.get(node, 0) + spread_scores[j]
             
             if len(candidate_scores) == 0:
                for node in candidate_nodes:
@@ -213,7 +211,7 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
                         candidate_by_score[candidate_scores[candidate]] = set()
                     candidate_by_score[candidate_scores[candidate]].add(candidate)
                 max_score = max(candidate_by_score)
-                new_seed = max(candidate_by_score[max_score], key = lambda x : int(x))
+                new_seed = max(candidate_by_score[max_score], key = lambda x : candidate_nodes.index(x))
             
             seeds.append(new_seed)
             for j in range(len(all_spreads)):
