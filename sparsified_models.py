@@ -57,8 +57,6 @@ class ContagionModel(object):
                        first_sparsified_graph_id, 
                        sample_size = 1000, 
                        num_sample_cpus = 7, MULTIPROCESS_SAMPLE = True):
-        print("Sampling seeds with graph", first_sparsified_graph_id)
-        
         seeds = self.seed(first_sparsified_graph_id)
         spreads = []
         first_eval_sparsified_graph_id = self.params['eval_sparsified_graph_id']
@@ -167,7 +165,8 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
         super(IndependentCascadeEdgeQuerySeeding, self).__init__(params)
 
     def query(self, first_sparsified_graph_id):
-        sampled_nodes = self.params['sampled_nodes'][:int(self.params['rho'])]
+        order_id = int((first_sparsified_graph_id - self.params['sparsified_graph_id']) / self.params['graph_id_interval'])
+        sampled_nodes = self.params['sampled_nodes'][order_id][:int(self.params['rho'])]
         
         all_spreads = []
         spread_scores = []

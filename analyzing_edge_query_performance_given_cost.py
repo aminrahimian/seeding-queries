@@ -76,7 +76,6 @@ def analyze_cost_vs_performance(query_cost_id):
     sampled_nodes = pickle.load(open(root_data_address
                                     + 'sampled_nodes/'
                                     + 'fb100_edge_query_sampled_nodes_Penn94.pkl', 'rb'))
-    sampled_nodes = sorted(sampled_nodes, key = lambda elt : int(elt))
     candidate_nodes = pickle.load(open(root_data_address
                                     + 'sampled_nodes/'
                                     + 'fb100_edge_query_candidate_nodes_Penn94.pkl', 'rb'))  
@@ -104,7 +103,7 @@ def analyze_cost_vs_performance(query_cost_id):
         'candidate_nodes' : candidate_nodes,
         'sparsified_graph_id' : sparsified_graph_id,
         'eval_sparsified_graph_id' : eval_sparsified_graph_id,
-        'graph_id_interval' : max(T),
+        'graph_id_interval' : max(Ts),
         'memory': memory,
         'rewire': False,
         'rewiring_mode': 'random_random',
