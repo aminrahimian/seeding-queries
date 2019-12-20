@@ -33,7 +33,7 @@ num_sample_cpus = 7
 
 CAP = 0.9
 
-Ts = list(range(11))
+Ts = list(range(15))
 
         
 def analyze_cost_vs_performance(query_cost_id):
