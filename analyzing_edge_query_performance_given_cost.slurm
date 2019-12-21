@@ -1,16 +1,16 @@
 #!/bin/bash
-#SBATCH --job-name="analyze_edge_query_performance"
+#SBATCH --job-name="EQ k=10"
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=28
 #SBATCH --mem-per-cpu=4G
 #SBATCH --partition=sched_mit_sloan_sinana
 #SBATCH --time=4-00:00:00
-#SBATCH --array=1-11
+#SBATCH --array=17-21
 
 
-#SBATCH -o /home/sanzeed/seeding_queries/analyzing_edge_query_performance.out
-#SBATCH -e /home/sanzeed/seeding_queries/analyzing_edge_query_performance.err
-#SBATCH --mail-type=BEGIN,END,FAIL
+#SBATCH -o /home/sanzeed/seeding_queries/EQ_k10.out
+#SBATCH -e /home/sanzeed/seeding_queries/EQ_k10.err
+#SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=sanzeed@mit.edu
 
 module load python/3.6.3
