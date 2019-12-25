@@ -209,8 +209,10 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
                     if candidate_scores[candidate] not in candidate_by_score:
                         candidate_by_score[candidate_scores[candidate]] = set()
                     candidate_by_score[candidate_scores[candidate]].add(candidate)
+
                 max_score = max(candidate_by_score)
-                new_seed = max(candidate_by_score[max_score], key = lambda x : candidate_nodes.index(x))
+                top_candidates = candidate_by_score[max_score].difference(set(seeds))
+                new_seed = min(top_candidates, key = lambda x : candidate_nodes.index(x))
             
             seeds.append(new_seed)
             for j in range(len(all_spreads)):
