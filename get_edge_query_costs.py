@@ -99,7 +99,7 @@ def get_costs_for_given_T(T_id):
     else:
         partial_get_costs = partial(get_costs, 
                                     G = G, 
-                                    graph_is = graph_ids, 
+                                    graph_ids = graph_ids, 
                                     sampled_nodes = sampled_nodes, 
                                     T = T, 
                                     rho = rho)
