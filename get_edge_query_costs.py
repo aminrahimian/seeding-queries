@@ -43,8 +43,8 @@ def get_sample_spreads(sampled_nodes, graph_id, T):
 
     return all_spreads
 
-def get_costs(graph_id, G, sampled_nodes, T):
-    all_spreads = get_sample_spreads(sampled_nodes, graph_id, T)
+def get_costs(id_index, G, graph_ids, sampled_nodes, T, rho):
+    all_spreads = get_sample_spreads(sampled_nodes[id_index][:int(rho)], graph_ids[id_index], T)
 
     edge_cost = set()
     node_cost = set()
@@ -90,17 +90,21 @@ def get_costs_for_given_T(T_id):
     sampled_nodes = pickle.load(open(root_data_address
                                 + 'sampled_nodes/'
                                 + 'fb100_edge_query_sampled_nodes_Penn94.pkl', 'rb'))
-    sampled_nodes = sorted(sampled_nodes, key = lambda elt : int(elt))[:int(rho)]
 
-
-    graph_ids = [first_graph_id + i * interval for i in range(seed_sample_size)]
+    id_indices = list(range(seed_sample_size))
+    graph_ids = [first_graph_id + i * interval for i in id_indices]
     if not MULTIPROCESS:
-        for graph_id in graph_ids:
-            costs.append(get_costs(graph_id, G, sampled_nodes, T))
+        for id_index in id_indices:
+            costs.append(get_costs(id_index, G, graph_ids, sampled_nodes, T, rho))
     else:
-        partial_get_costs = partial(get_costs, G = G, sampled_nodes = sampled_nodes, T = T)
+        partial_get_costs = partial(get_costs, 
+                                    G = G, 
+                                    graph_is = graph_ids, 
+                                    sampled_nodes = sampled_nodes, 
+                                    T = T, 
+                                    rho = rho)
         with Multipool(processes = num_cpus) as pool:
-            costs = pool.map(partial_get_costs, graph_ids)
+            costs = pool.map(partial_get_costs, id_indices)
 
     if save_computations:
         seeding_model_folder = "/edge_query/" + network_id + "/"
