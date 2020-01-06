@@ -16,4 +16,4 @@
 module load python/3.6.3
 module load sloan/python/modules/3.6
 
-python3 /home/sanzeed/seeding_queries/get_edge_query_cost.py ${SLURM_ARRAY_TASK_ID}
+python3 /home/sanzeed/seeding_queries/get_edge_query_costs.py ${SLURM_ARRAY_TASK_ID}
