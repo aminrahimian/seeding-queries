@@ -10,7 +10,7 @@ import os
 seed_sample_size = 50
 MULTIPROCESS = True
 num_cpus = 28
-Ts = list(range(1, 16))
+Ts = list(range(1, 21))
 
 
 def spread(node, sparsified_graph_id):
