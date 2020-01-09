@@ -56,7 +56,7 @@ def get_costs(id_index, G, graph_ids, sampled_nodes, T, rho):
         # nodes = filter(lambda node : subgraph.degree(node) > 1, set(subgraph.nodes()))
 
         edge_cost.update(set(subgraph.edges()))
-        node_cost.update(set(subgraph.edges()))
+        node_cost.update(set(subgraph.nodes()))
 
     return (len(edge_cost), len(node_cost))
 
