@@ -2,7 +2,7 @@ from settings import *
 import os
 import csv
 import pickle
-import numpy as numpy
+import numpy as np
 
 root = './data/fb100-data/pickled_samples/spreading_pickled_samples/'
 
@@ -48,7 +48,7 @@ def get_edge_query_data():
                 for seed_set_id in range(50):
                     for sample_id in range(500):
                         writer.writerow([k, T, seed_set_id, sample_id, 
-                                        spreads[50 * seed_set_id + sample_id],
+                                        spreads[500 * seed_set_id + sample_id],
                                         costs_with_leaves[seed_set_id][0], costs_without_leaves[seed_set_id][0],
                                         costs_with_leaves[seed_set_id][1], costs_without_leaves[seed_set_id][1]])
 
