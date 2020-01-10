@@ -33,7 +33,7 @@ num_sample_cpus = 7
 
 CAP = 0.9
 
-query_costs = [4, 8, 12, 16, 20, 24, 32, 44, 60, 80, 104, 132, 164, 200]
+query_costs = [0, 4, 8, 12, 16, 20, 24, 32, 44, 60, 80, 104, 132, 164, 200]
 
         
 def analyze_cost_vs_performance(query_cost_id):
@@ -77,11 +77,14 @@ def analyze_cost_vs_performance(query_cost_id):
     query_cost = query_costs[query_cost_id]
     rho = query_cost / k
 
-    sparsified_graph_id = 100000
-    eval_sparsified_graph_id = 119500
+    sparsified_graph_id = 0
+    eval_sparsified_graph_id = 350
     sample_nodes = pickle.load(open(root_data_address
                                     + 'sampled_nodes/'
                                     + 'fb100_spread_query_sampled_nodes_Penn94.pkl', 'rb'))
+    candidate_nodes = pickle.load(open(root_data_address
+                                    + 'sampled_nodes/'
+                                    + 'fb100_spread_query_candidate_nodes_Penn94.pkl', 'rb'))
 
     params_original = {
         'network': G,
@@ -101,6 +104,7 @@ def analyze_cost_vs_performance(query_cost_id):
         'sparsified_graph_id' : sparsified_graph_id,
         'eval_sparsified_graph_id' : eval_sparsified_graph_id,
         'sampled_nodes' : sample_nodes,
+        'candidate_nodes' : candidate_nodes,
         'T' : T,
         'tau' : tau,
         'memory': memory,

@@ -110,7 +110,8 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
         super(IndependentCascadeSpreadQuerySeeding, self).__init__(params)
 
     def query(self, first_sparsified_graph_id):
-        sampled_nodes = self.params['sampled_nodes']
+        order_id = int((first_sparsified_graph_id - self.params['sparsified_graph_id']) / self.params['graph_id_interval'])
+        sampled_nodes = self.params['sampled_nodes'][order_id]
         all_spreads = []
 
         for i in range(self.params['k']):
@@ -129,22 +130,20 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
     def seed(self, first_sparsified_graph_id):
         all_spreads = self.query(first_sparsified_graph_id)
         seeds = []
+        order_id = int((first_sparsified_graph_id - self.params['sparsified_graph_id']) / self.params['graph_id_interval'])
+        candidate_nodes = self.params['candidate_nodes'][order_id]
 
         for i in range(self.params['k']):
-            spreads = all_spreads[i]
-            for j in range(len(spreads)):
-                if len(spreads[j].intersection(set(seeds))) != 0:
-                    spreads[j] = set()
-        
+            spreads = all_spreads[i]      
             candidate_score = {}
             for spread in spreads:
                 for node in spread:
                     candidate_score[node] = candidate_score.get(node, 0) + 1
 
             if len(candidate_score) == 0:
-                for sampled_node in self.params['sampled_nodes'][i][:int(self.params['rho'])]:
+                for sampled_node in candidate_nodes:
                     if sampled_node not in seeds:
-                        seeds.append(sampled_node)
+                        new_seed = sampled_node
                         break
             else:
                 candidate_by_score = {}
@@ -152,9 +151,15 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
                     if candidate_score[candidate] not in candidate_by_score:
                         candidate_by_score[candidate_score[candidate]] = set()
                     candidate_by_score[candidate_score[candidate]].add(candidate)
+
                 max_score = max(candidate_by_score)
-                new_seed = max(candidate_by_score[max_score], key = lambda x : int(x))
-                seeds.append(new_seed)
+                top_candidates = candidate_by_score[max_score].difference(set(seeds))
+                new_seed = min(top_candidates, key = lambda x : candidate_nodes.index(x))
+
+            seeds.append(new_seed)
+            for j in range(len(spreads)):
+                if new_seed in spreads[j]:
+                    spreads[j] = set()
 
         del(all_spreads)
         return seeds
