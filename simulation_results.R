@@ -7,8 +7,9 @@ theme_set(theme_bw())
 library(scales)
 library(RColorBrewer)
 
+setwd("/home/amin/Dropbox (MIT)/Contagion/Seeding/seeding_queries/")
 
-ed = readr::read_csv("data/edge_query_no_T_0.csv")
+ed = readr::read_csv("data/edge_query.csv")
 names(ed) = tolower(names(ed))
 names(ed) = gsub(" ", "_", names(ed))
 names(ed) = gsub("_without_leaves", "_wol", names(ed))
@@ -31,6 +32,15 @@ ed = ed %>%
     edge_cost_percent = 100 * edge_cost / penn_max_edges
   )
 
+
+
+#ed_t0 <- subset(ed,t == 0)
+#ed_t0 <- mutate(ed_t0,spread_size_percent_t0 = spread_size_percent)
+#ed_t0 <- select (ed_t0,c(spread_size_percent_t0,k,seed_set_id))
+
+#total <- merge(ed,ed_t0,all=TRUE)
+
+
 eds = ed %>%
   group_by(k, t, seed_set_id) %>%
   summarise(
@@ -39,6 +49,8 @@ eds = ed %>%
     node_cost_percent = node_cost_percent[1],
     edge_cost_percent = edge_cost_percent[1]
   )
+
+
 
 edss = eds %>%
   group_by(k, t) %>%
@@ -52,8 +64,10 @@ edss = eds %>%
     edge_cost_mean_se = sd(edge_cost_percent) / sqrt(n())
   )
 
+
+
 #k_colors <- scales::seq_gradient_pal("orange","blue", "red")(
-#  seq(0, 1, length.out = length(unique(edss$k)))
+#  seq(0, 1, length.out = length(unique(edss$k))) 
 #)
 
 
@@ -95,6 +109,7 @@ ggsave("figures/edge_queries_spread_size_boxplot_t.pdf", width = 4.5, height = 3
 
 
 # mapping between costs
+
 ggplot(
   aes(
     x = edge_cost_percent, 
@@ -114,6 +129,7 @@ ggplot(
 
 t_to_node_cost_trans_func = function(x) approx(edss$t, edss$node_cost_mean, xout = x)$y
 edge_to_node_cost_trans_func = function(x) approx(edss$edge_cost_mean, edss$node_cost_mean, xout = x)$y
+
 
 
 ggplot(
@@ -173,4 +189,104 @@ ggplot(
   theme(legend.position = c(0.9, 0.25))
 
 ggsave("figures/edge_queries_spread_size_by_edges_and_nodes_queried.pdf", width = 4.5, height = 3.5)
+
+##################spread queries
+
+sp = readr::read_csv("data/spread_query.csv")
+
+names(sp) = tolower(names(sp))
+names(sp) = gsub(" ", "_", names(sp))
+names(sp) = gsub("_without_leaves", "_wol", names(sp))
+
+sp = sp %>%
+  mutate(
+    spread_size_percent = 100 * spread_size / penn_max_nodes
+  )
+
+sps = sp %>%
+  group_by(k,num_of_spread_query, seed_set_id) %>%
+  summarise(
+    n = n(),
+    spread_size_mean = mean(spread_size_percent)
+  )
+
+spss = sps %>%
+  group_by(k,num_of_spread_query) %>%
+  summarise(
+    n_seed_set_ids = n(),
+    spread_size_mean_se = sd(spread_size_mean) / sqrt(n()),
+    spread_size_mean = mean(spread_size_mean)
+  )
+
+# show distribution of spread sizes
+ggplot(
+  aes(x = num_of_spread_query, y = spread_size_percent,
+      color = factor(k), group = num_of_spread_query),
+  data = sp
+) +
+  facet_wrap( ~ k, labeller = label_both) +
+  scale_x_log10() +
+  geom_boxplot(outlier.shape = NA) +
+  scale_color_manual(
+    name = "k", values = k_colors,
+    guide = guide_legend(reverse = TRUE)
+  )
+
+ggplot(
+  aes(x = factor(num_of_spread_query), y = spread_size_percent,
+      color = factor(k), group = paste(num_of_spread_query, sprintf("%02d", k))),
+  data = sp
+) +
+  geom_boxplot(
+    #outlier.shape = NA,
+    outlier.size = .1, outlier.alpha = .1, outlier.shape = 4,
+    lwd = .4,
+    width = .4,
+    position = position_dodge2(width = 1.3)
+  ) +
+  scale_color_manual(
+    name = "k", values = k_colors,
+    guide = guide_legend(reverse = TRUE)
+  ) +
+  scale_y_continuous(name = "spread size (%)") +
+  scale_x_discrete(name = "query cost")  +
+  theme(legend.position = c(0.9, 0.4))
+
+
+ggsave("figures/spread_queries_spread_size_boxplot_num_of_spread_query.pdf", width = 4.5, height = 3.5)
+
+# mapping between costs
+
+#t_to_node_cost_trans_func = function(x) approx(edss$t, edss$node_cost_mean, xout = x)$y
+#edge_to_node_cost_trans_func = function(x) approx(edss$edge_cost_mean, edss$node_cost_mean, xout = x)$y
+
+
+ggplot(
+  aes(
+    x = num_of_spread_query, 
+    y = spread_size_mean,
+    ymin = spread_size_mean - qt(.975, df = n_seed_set_ids) * spread_size_mean_se,
+    ymax = spread_size_mean + qt(.975, df = n_seed_set_ids) * spread_size_mean_se,
+    color = factor(k), shape = factor(k), group = k
+  ),
+  data = spss
+) +
+  geom_line() +
+  geom_pointrange(size = .4) +
+  scale_color_manual(
+    name = "k", values = k_colors,
+    guide = guide_legend(reverse = TRUE)
+  ) +
+  scale_shape_discrete(name = "k", guide = guide_legend(reverse = TRUE)) +
+  scale_y_continuous(name = "spread size (mean %)") +
+  scale_x_continuous(
+    name = "query cost",
+    #sec.axis = sec_axis(
+    #  ~ t_to_node_cost_trans_func(.),
+    #  name = "nodes queried (mean %)"
+    #)
+  ) +
+  theme(legend.position = c(0.9, 0.25))
+
+ggsave("figures/spread_queries_spread_size_by_query_cost.pdf", width = 4.5, height = 3.5)
 
