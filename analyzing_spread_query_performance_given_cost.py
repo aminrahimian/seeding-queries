@@ -33,7 +33,7 @@ num_sample_cpus = 7
 
 CAP = 0.9
 
-query_costs = [0, 4, 8, 12, 16, 20, 24, 32, 44, 60, 80, 104, 132, 164, 200]
+query_costs = [0, 1, 2, 3, 4, 5, 7, 8, 10, 13, 16, 20, 24, 30, 37, 46, 57, 71, 88, 109, 134, 166, 206, 255, 315, 390]
 
         
 def analyze_cost_vs_performance(query_cost_id):
