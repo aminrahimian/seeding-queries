@@ -51,12 +51,12 @@ def get_costs(id_index, G, graph_ids, sampled_nodes, T, rho):
     for spread in all_spreads:
         subgraph = G.subgraph(list(spread))
 
-        edges = filter(lambda edge : subgraph.degree(edge[0]) > 1 and subgraph.degree(edge[1]) > 1, 
-                       set(subgraph.edges()))
-        nodes = filter(lambda node : subgraph.degree(node) > 1, set(subgraph.nodes()))
+        # edges = filter(lambda edge : subgraph.degree(edge[0]) > 1 and subgraph.degree(edge[1]) > 1, 
+        #                set(subgraph.edges()))
+        # nodes = filter(lambda node : subgraph.degree(node) > 1, set(subgraph.nodes()))
 
-        edge_cost.update(edges)
-        node_cost.update(nodes)
+        edge_cost.update(set(subgraph.edges()))
+        node_cost.update(set(subgraph.nodes()))
 
     return (len(edge_cost), len(node_cost))
 
@@ -114,7 +114,7 @@ def get_costs_for_given_T(T_id):
         os.makedirs(os.path.dirname(data_dump_folder), exist_ok = True)
 
         pickle.dump(costs, open(data_dump_folder
-                                                + 'cost_samples_without_leaf_'
+                                                + 'cost_samples_with_leaf_'
                                                 + network_group + network_id
                                                 + '_T_' + str(T)
                                                 + model_id + '.pkl', 'wb'))

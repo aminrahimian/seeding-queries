@@ -5,6 +5,7 @@ import pickle
 import numpy as np
 
 root = './data/fb100-data/pickled_samples/spreading_pickled_samples/'
+costs = [0, 1, 2, 3, 4, 5, 7, 8, 10, 13, 16, 20, 24, 30, 37, 46, 57, 71, 88, 109, 134, 166, 206, 255, 315, 390]
 
 
 def get_edge_query_data():
@@ -18,7 +19,7 @@ def get_edge_query_data():
                          'node cost', 'node cost without leaves'])
 
         for k in [2, 4, 10]:       
-            for T in range(21):
+            for T in costs:
                 spreads = pickle.load(open(root + 'k_' + str(k)
                                         + '/edge_query'
                                         + '/' + network_id
