@@ -41,7 +41,7 @@ ed = ed %>%
 #total <- merge(ed,ed_t0,all=TRUE)
 
 
-eds = ed %>%
+eds = ed %>% filter(t<=100) %>%
   group_by(k, t, seed_set_id) %>%
   summarise(
     n = n(),
@@ -200,22 +200,34 @@ names(sp) = gsub("_without_leaves", "_wol", names(sp))
 
 sp = sp %>%
   mutate(
-    spread_size_percent = 100 * spread_size / penn_max_nodes
+    spread_size_percent = 100 * spread_size / penn_max_nodes,
+    revenue = 0.1 * spread_size,
+    cost = 10*k + num_of_spread_query,
+  ) 
+
+sp = sp %>%
+  mutate(
+    profit = revenue - cost
   )
+
+# getting the expected spread sizes and profits
 
 sps = sp %>%
   group_by(k,num_of_spread_query, seed_set_id) %>%
   summarise(
     n = n(),
-    spread_size_mean = mean(spread_size_percent)
+    spread_size_expected = mean(spread_size_percent),
+    profit_expected = mean(profit)
   )
 
 spss = sps %>%
   group_by(k,num_of_spread_query) %>%
   summarise(
     n_seed_set_ids = n(),
-    spread_size_mean_se = sd(spread_size_mean) / sqrt(n()),
-    spread_size_mean = mean(spread_size_mean)
+    spread_size_mean_se = sd(spread_size_expected) / sqrt(n()),
+    spread_size_mean = mean(spread_size_expected),
+    profit_mean_se = sd(profit_expected) / sqrt(n()),
+    profit_mean = mean(profit_expected)
   )
 
 # show distribution of spread sizes
@@ -251,6 +263,7 @@ ggplot(
   scale_y_continuous(name = "spread size (%)") +
   scale_x_discrete(name = "query cost")  +
   theme(legend.position = c(0.9, 0.4))
+
 
 
 ggsave("figures/spread_queries_spread_size_boxplot_num_of_spread_query.pdf", width = 4.5, height = 3.5)
@@ -289,4 +302,36 @@ ggplot(
   theme(legend.position = c(0.9, 0.25))
 
 ggsave("figures/spread_queries_spread_size_by_query_cost.pdf", width = 4.5, height = 3.5)
+
+
+# plot the profit
+
+ggplot(
+  aes(
+    x = num_of_spread_query, 
+    y = profit_mean,
+    ymin = profit_mean - qt(.975, df = n_seed_set_ids) * profit_mean_se,
+    ymax = profit_mean + qt(.975, df = n_seed_set_ids) * profit_mean_se,
+    color = factor(k), shape = factor(k), group = k
+  ),
+  data = spss
+) +
+  geom_line() +
+  geom_pointrange(size = .4) +
+  scale_color_manual(
+    name = "k", values = k_colors,
+    guide = guide_legend(reverse = TRUE)
+  ) +
+  scale_shape_discrete(name = "k", guide = guide_legend(reverse = TRUE)) +
+  scale_y_continuous(name = "mean profit") +
+  scale_x_continuous(
+    name = "query cost",
+    #sec.axis = sec_axis(
+    #  ~ t_to_node_cost_trans_func(.),
+    #  name = "nodes queried (mean %)"
+    #)
+  ) +
+  theme(legend.position = c(0.9, 0.25))
+
+ggsave("figures/spread_queries_profit_by_query_cost.pdf", width = 4.5, height = 3.5)
 
