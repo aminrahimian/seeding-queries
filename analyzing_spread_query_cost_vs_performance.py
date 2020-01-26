@@ -39,7 +39,6 @@ def analyze_performance_for_given_cost(query_cost, G, network_size, eps, eps_pri
         'network': G,
         'original_network': G,
         'size': network_size,
-        'add_edges': False,
         'k': k,
         'delta': delta,
         'alpha': alpha,
@@ -51,9 +50,6 @@ def analyze_performance_for_given_cost(query_cost, G, network_size, eps, eps_pri
         'T' : T,
         'tau' : tau,
         'memory': memory,
-        'rewire': False,
-        'rewiring_mode': 'random_random',
-        'num_edges_for_random_random_rewiring': None,
     }
 
     if model_id == '_vanilla IC_':

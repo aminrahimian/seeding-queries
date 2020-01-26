@@ -39,76 +39,7 @@ class ContagionModel(object):
         if 'network' in self.fixed_params:
             self.params['network'] = self.fixed_params['network']
         elif 'network' not in self.fixed_params:
-            if self.params['network_model'] == 'erdos_renyi':
-                if 'linkProbability' not in self.fixed_params:  # erdos-renyi link probability
-                    self.params['linkProbability'] = 2 * np.log(self.params['size']) / self.params[
-                        'size']  # np.random.beta(1, 1, None)*20*np.log(self.params['size'])/self.params['size']
-                self.params['network'] = NX.erdos_renyi_graph(self.params['size'], self.params['linkProbability'])
-                if not NX.is_connected(self.params['network']):
-                    self.params['network'] = NX.erdos_renyi_graph(self.params['size'], self.params['linkProbability'])
-
-            elif self.params['network_model'] == 'watts_strogatz':
-                if 'nearest_neighbors' not in self.fixed_params:
-                    self.params['nearest_neighbors'] = 3
-                if 'rewiring_probability' not in self.fixed_params:
-                    self.params['rewiring_probability'] = 0.000000005
-                self.params['network'] = NX.connected_watts_strogatz_graph(self.params['size'],
-                                                                           self.params['nearest_neighbors'],
-                                                                           self.params['rewiring_probability'])
-            elif self.params['network_model'] == 'grid':
-                if 'number_grid_rows' not in self.fixed_params:
-                    if 'number_grid_columns' not in self.fixed_params:
-                        (self.params['number_grid_columns'], self.params['number_grid_rows']) = \
-                            random_factor_pair(self.params['size'])
-                    else:
-                        self.params['number_grid_rows'] = self.params['size'] // self.params['number_grid_columns']
-                        self.params['number_grid_columns'] = self.params['size'] // self.params['number_grid_rows']
-                elif 'number_grid_columns' in self.fixed_params:
-                    assert self.params['number_grid_columns'] * self.params['number_grid_rows'] == self.params['size'], \
-                        'incompatible size and grid dimensions'
-                else:
-                    self.params['number_grid_columns'] = self.params['size'] // self.params['number_grid_rows']
-                    self.params['number_grid_rows'] = self.params['size'] // self.params['number_grid_columns']
-                self.params['network'] = NX.grid_2d_graph(self.params['number_grid_rows'],
-                                                          self.params['number_grid_columns'])
-            elif self.params['network_model'] == 'random_regular':
-                if 'degree' not in self.fixed_params:
-                    self.params['degree'] = np.random.randint(1, 6)
-                self.params['network'] = NX.random_regular_graph(self.params['degree'], self.params['size'], seed=None)
-            elif self.params['network_model'] == 'newman_watts_fixed_number':
-                if 'fixed_number_edges_added' not in self.fixed_params:
-                    self.params['fixed_number_edges_added'] = 2
-                if 'nearest_neighbors' not in self.fixed_params:
-                    self.params['nearest_neighbors'] = 2
-                self.params['network'] = newman_watts_add_fixed_number_graph(self.params['size'],
-                                                                             self.params['nearest_neighbors'],
-                                                                             self.params['fixed_number_edges_added'])
-            elif self.params['network_model'] == 'cycle_union_Erdos_Renyi':
-                if 'c' not in self.fixed_params:
-                    self.params['c'] = 2
-                if 'nearest_neighbors' not in self.fixed_params:
-                    self.params['nearest_neighbors'] = 2
-                self.params['network'] = cycle_union_erdos_renyi(self.params['size'], self.params['nearest_neighbors'],
-                                                                 self.params['c'])
-
-            elif self.params['network_model'] == 'c_1_c_2_interpolation':
-                if 'c' not in self.fixed_params:
-                    self.params['c'] = 2
-                if 'nearest_neighbors' not in self.fixed_params:
-                    self.params['nearest_neighbors'] = 2
-                if 'add_long_ties_exp' not in self.fixed_params:
-                    self.params['add_long_ties_exp'] = np.random.exponential(scale=self.params['size'] ** 2,
-                                                                             size=int(1.0 * self.params['size']
-                                                                                      * (self.params['size'] - 1)) // 2)
-
-                    self.params['remove_cycle_edges_exp'] = np.random.exponential(scale=2 * self.params['size'],
-                                                                                  size=self.params['size'])
-
-                self.params['network'] = c_1_c_2_interpolation(self.params['size'], self.params['eta'],
-                                                               self.params['add_long_ties_exp'],
-                                                               self.params['remove_cycle_edges_exp'])
-            else:
-                assert False, 'undefined network type'
+            pass
 
         # when considering real network and interventions on them we may need to record the original network.
         # This is currently only used in SimpleOnlyAlongOriginalEdges(ContagionModel)

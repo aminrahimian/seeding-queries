@@ -90,7 +90,6 @@ def analyze_cost_vs_performance(query_cost_id):
         'network': G,
         'original_network': G,
         'size': network_size,
-        'add_edges': False,
         'network_id' : network_id,
         'k': k,
         'delta': delta,
@@ -108,9 +107,6 @@ def analyze_cost_vs_performance(query_cost_id):
         'T' : T,
         'tau' : tau,
         'memory': memory,
-        'rewire': False,
-        'rewiring_mode': 'random_random',
-        'num_edges_for_random_random_rewiring': None,
     }
 
     if model_id == '_vanilla IC_':

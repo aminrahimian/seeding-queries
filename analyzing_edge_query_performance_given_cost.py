@@ -88,7 +88,6 @@ def analyze_cost_vs_performance(query_cost_id):
         'original_network': G,
         'network_id': network_id,
         'size': network_size,
-        'add_edges': False,
         'k': k,
         'delta': delta,
         'alpha': alpha,
@@ -105,9 +104,6 @@ def analyze_cost_vs_performance(query_cost_id):
         'eval_sparsified_graph_id' : eval_sparsified_graph_id,
         'graph_id_interval' : max(Ts),
         'memory': memory,
-        'rewire': False,
-        'rewiring_mode': 'random_random',
-        'num_edges_for_random_random_rewiring': None,
     }
 
     if model_id == '_vanilla IC_':
