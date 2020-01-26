@@ -41,7 +41,7 @@ ed = ed %>%
 #total <- merge(ed,ed_t0,all=TRUE)
 
 
-eds = ed %>% filter(t<=100) %>%
+eds = ed %>% filter(t<=60) %>%
   group_by(k, t, seed_set_id) %>%
   summarise(
     n = n(),
