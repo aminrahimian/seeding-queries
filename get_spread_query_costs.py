@@ -9,7 +9,7 @@ import os
 
 seed_sample_size = 50
 MULTIPROCESS = True
-num_cpus = 28
+num_cpus = 25
 query_costs = [0, 4, 8, 12, 16, 20, 24, 32, 44, 60, 80, 104, 132, 164, 200]
 
 
