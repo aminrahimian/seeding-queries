@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name="EQC k=4"
+#SBATCH --job-name="SQC k=4"
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=25
 #SBATCH --mem-per-cpu=4G
