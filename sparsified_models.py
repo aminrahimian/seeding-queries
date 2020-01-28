@@ -100,9 +100,10 @@ class ContagionModel(object):
                                          num_sample_cpus = num_sample_cpus,
                                          MULTIPROCESS_SAMPLE = MULTIPROCESS_SAMPLE)
             with Multipool(processes = num_seed_sample_cpus) as pool:
-                spread_lists = pool.map(partial_eval_seeds, graph_id_list)
-            for spread_list in spread_lists:
-                all_spreads += spread_list
+                spread_items = pool.map(partial_eval_seeds, graph_id_list)
+            for spread_item in spread_items:
+                all_spreads += spread_item[0]
+                all_costs.append(spread_item[1])
 
         return all_spreads, all_costs
 
