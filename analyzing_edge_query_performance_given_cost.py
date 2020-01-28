@@ -27,9 +27,9 @@ seed_sample_size = 50
 
 sample_size = 500
 
-num_seed_sample_cpus = 4
+num_seed_sample_cpus = 3
 
-num_sample_cpus = 7
+num_sample_cpus = 8
 
 CAP = 0.9
 
