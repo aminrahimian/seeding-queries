@@ -57,7 +57,9 @@ class ContagionModel(object):
                        first_sparsified_graph_id, 
                        sample_size = 1000, 
                        num_sample_cpus = 7, MULTIPROCESS_SAMPLE = True):
-        seeds, _, _, _, _ = self.seed(first_sparsified_graph_id)
+        seeds, \
+            edge_cost_with_leaf, edge_cost_without_leaf, \
+            node_cost_with_leaf, node_cost_without_leaf = self.seed(first_sparsified_graph_id)
         spreads = []
         first_eval_sparsified_graph_id = self.params['eval_sparsified_graph_id']
 
@@ -71,7 +73,7 @@ class ContagionModel(object):
                                    list(range(first_eval_sparsified_graph_id, first_eval_sparsified_graph_id + sample_size)))
                 spreads = [len(spread) for spread in spreads]
 
-        return spreads
+        return spreads, (edge_cost_with_leaf, edge_cost_without_leaf, node_cost_with_leaf, node_cost_without_leaf)
 
     def evaluate_model(self, seed_sample_size = 50, sample_size = 500, 
                        num_seed_sample_cpus = 4, MULTIPROCESS_SEED_SAMPLE = True,
@@ -80,13 +82,18 @@ class ContagionModel(object):
         graph_id_interval = self.params['graph_id_interval']
         graph_id_list = [sparsified_graph_id + i * graph_id_interval for i in range(seed_sample_size)]
         all_spreads = []
+        all_costs = []
 
         if not MULTIPROCESS_SEED_SAMPLE:
+            spread_items = []
             for graph_id in graph_id_list:
-                all_spreads += self.evaluate_seeds(graph_id, 
-                                                   sample_size = sample_size,
-                                                   num_sample_cpus = num_sample_cpus,
-                                                   MULTIPROCESS_SAMPLE = MULTIPROCESS_SAMPLE)
+                spread_items.append(self.evaluate_seeds(graph_id, 
+                                                        sample_size = sample_size,
+                                                        num_sample_cpus = num_sample_cpus,
+                                                        MULTIPROCESS_SAMPLE = MULTIPROCESS_SAMPLE))
+            for spread_item in spread_items:
+                all_spreads += spread_item[0]
+                all_costs.append(spread_item[1])
         else:
             partial_eval_seeds = partial(self.evaluate_seeds, 
                                          sample_size = sample_size,
@@ -97,7 +104,7 @@ class ContagionModel(object):
             for spread_list in spread_lists:
                 all_spreads += spread_list
 
-        return all_spreads
+        return all_spreads, all_costs
 
 
 class IndependentCascade(ContagionModel):

@@ -112,12 +112,12 @@ def analyze_cost_vs_performance(query_cost_id):
         print('model_id is not valid')
         exit()
 
-    spread_results = dynamics.evaluate_model(seed_sample_size = seed_sample_size, 
-                                             sample_size = sample_size, 
-                                             num_seed_sample_cpus = num_seed_sample_cpus, 
-                                             MULTIPROCESS_SEED_SAMPLE = MULTIPROCESS_SAMPLE, 
-                                             num_sample_cpus = num_sample_cpus, 
-                                             MULTIPROCESS_SAMPLE = MULTIPROCESS_SEED_SAMPLE)
+    spread_results, cost_results = dynamics.evaluate_model(seed_sample_size = seed_sample_size, 
+                                                           sample_size = sample_size, 
+                                                           num_seed_sample_cpus = num_seed_sample_cpus, 
+                                                           MULTIPROCESS_SEED_SAMPLE = MULTIPROCESS_SAMPLE, 
+                                                           num_sample_cpus = num_sample_cpus, 
+                                                           MULTIPROCESS_SAMPLE = MULTIPROCESS_SEED_SAMPLE)
 
     if VERBOSE:
         print('================================================', "\n",
@@ -133,6 +133,12 @@ def analyze_cost_vs_performance(query_cost_id):
 
         pickle.dump(spread_results, open(data_dump_folder
                                               + 'spread_size_samples_'
+                                              + network_group + network_id
+                                              + '_T_' + str(T)
+                                              + model_id + '.pkl', 'wb'))
+
+        pickle.dump(cost_results, open(data_dump_folder
+                                              + 'cost_samples_'
                                               + network_group + network_id
                                               + '_T_' + str(T)
                                               + model_id + '.pkl', 'wb'))
