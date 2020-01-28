@@ -33,7 +33,7 @@ num_sample_cpus = 8
 
 CAP = 0.9
 
-Ts = [0, 1, 2, 3, 4, 5, 7, 8, 10, 13, 16, 20, 24, 30, 37, 46, 57, 71, 88, 109, 134, 166, 206, 255, 315, 390]
+Ts = [0, 1, 2, 3, 4, 5, 7, 8, 10, 13, 16, 20, 24, 30, 37, 46, 57]
 
         
 def analyze_cost_vs_performance(query_cost_id):
@@ -70,8 +70,9 @@ def analyze_cost_vs_performance(query_cost_id):
     a = 0.95
     eps_prime = 2 * eps * (1 + a * (1 - eps))
     tau = np.log(1 / eps) * network_size / (eps * k)
-    rho = 10
+    rho = 100
     T = Ts[query_cost_id]
+    Tmax = 390
 
     sampled_nodes = pickle.load(open(root_data_address
                                     + 'sampled_nodes/'
@@ -102,7 +103,7 @@ def analyze_cost_vs_performance(query_cost_id):
         'candidate_nodes' : candidate_nodes,
         'sparsified_graph_id' : sparsified_graph_id,
         'eval_sparsified_graph_id' : eval_sparsified_graph_id,
-        'graph_id_interval' : max(Ts),
+        'graph_id_interval' : Tmax,
         'memory': memory,
     }
 
@@ -126,9 +127,13 @@ def analyze_cost_vs_performance(query_cost_id):
 
     if save_computations:
         seeding_model_folder = "/edge_query/" + network_id + "/"
-        data_dump_folder = (spreading_pickled_samples_directory_address
-                                                + 'k_' + str(k)
-                                                + seeding_model_folder)
+        data_dump_folder = ('../sociotechnical_proj/' 
+                            + 'seeding_queries/' 
+                            + 'data/' 
+                            + 'fb100-data/' 
+                            + 'pickled_samples/' 
+                            + 'spreading_pickled_samples/' 
+                            + 'k_' + str(k) + seeding_model_folder)
         os.makedirs(os.path.dirname(data_dump_folder), exist_ok = True)
 
         pickle.dump(spread_results, open(data_dump_folder
