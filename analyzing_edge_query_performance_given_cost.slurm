@@ -5,7 +5,7 @@
 #SBATCH --mem-per-cpu=4G
 #SBATCH --partition=sched_mit_sloan_sinana
 #SBATCH --time=4-00:00:00
-#SBATCH --array=1-4
+#SBATCH --array=2
 
 
 #SBATCH -o /home/sanzeed/seeding_queries/EQ_k4.out
