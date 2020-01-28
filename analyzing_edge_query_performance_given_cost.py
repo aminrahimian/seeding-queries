@@ -121,7 +121,7 @@ def analyze_cost_vs_performance(query_cost_id):
 
     if VERBOSE:
         print('================================================', "\n",
-              np.mean(spread_results), np.std(spread_results), "\n",
+              T, np.mean(spread_results), np.std(spread_results), "\n",
               '================================================')
 
     if save_computations:

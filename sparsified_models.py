@@ -57,7 +57,7 @@ class ContagionModel(object):
                        first_sparsified_graph_id, 
                        sample_size = 1000, 
                        num_sample_cpus = 7, MULTIPROCESS_SAMPLE = True):
-        seeds = self.seed(first_sparsified_graph_id)
+        seeds, _, _, _, _ = self.seed(first_sparsified_graph_id)
         spreads = []
         first_eval_sparsified_graph_id = self.params['eval_sparsified_graph_id']
 
@@ -114,21 +114,42 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
         sampled_nodes = self.params['sampled_nodes'][order_id]
         all_spreads = []
 
+        unique_node_set_with_leaf, unique_node_set_without_leaf = set(), set()
+        unique_edge_set_with_leaf, unique_edge_set_without_leaf = set(), set()
+
         for i in range(self.params['k']):
             spreads = []
             infected_nodes = sampled_nodes[i][:int(self.params['rho'])]
             sparsified_graph_id = first_sparsified_graph_id + i * int(self.params['graph_id_interval'] / self.params['k'])
 
             for node in infected_nodes:
-                spreads.append(self.spread(node, sparsified_graph_id))
+                spread = self.spread(node, sparsified_graph_id)
+                spreads.append(spread)
+
+                subgraph = G.subgraph(spread)
+
+                unique_node_set_with_leaf.update(spread)
+                unique_node_set_without_leaf.update(set(filter(lambda node : subgraph.degree(node) > 1, 
+                                                               set(subgraph.nodes()))))
+
+                unique_edge_set_with_leaf.update(set(subgraph.edges()))
+                unique_edge_set_without_leaf.update(set(filter(lambda edge : subgraph.degree(edge[0]) > 1 and subgraph.degree(edge[1]) > 1, 
+                                                               set(subgraph.edges()))))
+
                 sparsified_graph_id += 1
 
             all_spreads.append(spreads)
 
-        return all_spreads
+        return (all_spreads, 
+                len(unique_edge_set_with_leaf),
+                len(unique_edge_set_without_leaf),
+                len(unique_node_set_with_leaf),
+                len(unique_node_set_without_leaf))
 
     def seed(self, first_sparsified_graph_id):
-        all_spreads = self.query(first_sparsified_graph_id)
+        all_spreads, \
+            edge_cost_with_leaf, edge_cost_without_leaf, \
+            node_cost_with_leaf, node_cost_without_leaf = self.query(first_sparsified_graph_id)
         seeds = []
         order_id = int((first_sparsified_graph_id - self.params['sparsified_graph_id']) / self.params['graph_id_interval'])
         candidate_nodes = self.params['candidate_nodes'][order_id]
@@ -162,7 +183,11 @@ class IndependentCascadeSpreadQuerySeeding(IndependentCascade):
                     spreads[j] = set()
 
         del(all_spreads)
-        return seeds
+        return (seeds, 
+                edge_cost_with_leaf, 
+                edge_cost_without_leaf,
+                node_cost_with_leaf,
+                node_cost_without_leaf)
 
 
 class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
@@ -177,22 +202,43 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
         spread_scores = []
         sparsified_graph_id = first_sparsified_graph_id
 
+        unique_node_set_with_leaf, unique_node_set_without_leaf = set(), set()
+        unique_edge_set_with_leaf, unique_edge_set_without_leaf = set(), set()
+
         for i in range(self.params['T']):
             nodes_already_counted = set()
 
             for node in sampled_nodes:
                 if node not in nodes_already_counted:
                     connected_component = self.spread(node, sparsified_graph_id)
+
+                    subgraph = G.subgraph(connected_component)
+
+                    unique_node_set_with_leaf.update(connected_component)
+                    unique_node_set_without_leaf.update(set(filter(lambda node : subgraph.degree(node) > 1, 
+                                                                set(subgraph.nodes()))))
+
+                    unique_edge_set_with_leaf.update(set(subgraph.edges()))
+                    unique_edge_set_without_leaf.update(set(filter(lambda edge : subgraph.degree(edge[0]) > 1 and subgraph.degree(edge[1]) > 1, 
+                                                                set(subgraph.edges()))))
+
                     all_spreads.append(connected_component)
                     spread_scores.append(len(connected_component.intersection(set(sampled_nodes))))
                     nodes_already_counted.update(connected_component)
 
             sparsified_graph_id += 1
 
-        return all_spreads, spread_scores
+        return (all_spreads, 
+                spread_scores,
+                len(unique_edge_set_with_leaf),
+                len(unique_edge_set_without_leaf),
+                len(unique_node_set_with_leaf),
+                len(unique_node_set_without_leaf))
 
     def seed(self, first_sparsified_graph_id):
-        all_spreads, spread_scores = self.query(first_sparsified_graph_id)
+        all_spreads, spread_scores, \
+            edge_cost_with_leaf, edge_cost_without_leaf, \
+            node_cost_with_leaf, node_cost_without_leaf = self.query(first_sparsified_graph_id)
         seeds = []
         order_id = int((first_sparsified_graph_id - self.params['sparsified_graph_id']) / self.params['graph_id_interval'])
         candidate_nodes = self.params['candidate_nodes'][order_id]
@@ -226,4 +272,8 @@ class IndependentCascadeEdgeQuerySeeding(IndependentCascade):
 
         del(all_spreads)
         del(spread_scores)
-        return seeds
+        return (seeds,
+                edge_cost_with_leaf, 
+                edge_cost_without_leaf,
+                node_cost_with_leaf,
+                node_cost_without_leaf)
