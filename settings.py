@@ -59,43 +59,37 @@ network_group = 'fb100_edgelist_'
 
 if network_group == 'cai_edgelist_':
 
-    root_data_address = './data/cai-data/'
+    root_data_address = '../sociotechnical_proj/' + 'seeding_queries/'+ 'data/cai-data/'
 
     DELIMITER = ' '
 
 elif network_group == 'chami_friendship_edgelist_':
 
-    root_data_address = './data/chami-friendship-data/'
+    root_data_address =  '../sociotechnical_proj/' + 'seeding_queries/'+ 'data/chami-friendship-data/'
 
     DELIMITER = ','
 
 elif network_group == 'chami_advice_edgelist_':
 
-    root_data_address = './data/chami-advice-data/'
+    root_data_address = '../sociotechnical_proj/' + 'seeding_queries/'+ 'data/chami-advice-data/'
 
     DELIMITER = ','
 
 elif network_group == 'chami_union_edgelist_':
 
-    root_data_address = './data/chami-union-data/'
-
-    DELIMITER = ','
-
-elif network_group == 'chami_union_edgelist_':
-
-    root_data_address = './data/chami-union-data/'
+    root_data_address = '../sociotechnical_proj/' + 'seeding_queries/'+ 'data/chami-union-data/'
 
     DELIMITER = ','
 
 elif network_group == 'banerjee_combined_edgelist_':
 
-    root_data_address = './data/banerjee-combined-data/'
+    root_data_address = '../sociotechnical_proj/' + 'seeding_queries/'+ 'data/banerjee-combined-data/'
 
     DELIMITER = ' '
 
 elif network_group == 'fb100_edgelist_':
 
-    root_data_address = './data/fb100-data/'
+    root_data_address = '../sociotechnical_proj/' + 'seeding_queries/'+ 'data/fb100-data/'
 
     DELIMITER = ' '
 
@@ -133,32 +127,37 @@ if use_separate_address_for_pickled_networks:
 try:
     os.makedirs(output_directory_address)
 except OSError as e:
-    if e.errno != errno.EEXIST:
-        raise
+    pass
+#    if e.errno != errno.EEXIST:
+#        raise
 
 try:
     os.makedirs(pickled_samples_directory_address)
 except OSError as e:
-    if e.errno != errno.EEXIST:
-        raise
+    pass
+#    if e.errno != errno.EEXIST:
+#        raise
 
 try:
     os.makedirs(properties_pickled_samples_directory_address)
 except OSError as e:
-    if e.errno != errno.EEXIST:
-        raise
+    pass
+#    if e.errno != errno.EEXIST:
+#        raise
 
 try:
     os.makedirs(spreading_pickled_samples_directory_address)
 except OSError as e:
-    if e.errno != errno.EEXIST:
-        raise
+    pass
+#    if e.errno != errno.EEXIST:
+#        raise
 
 try:
     os.makedirs(networks_pickled_samples_directory_address)
 except OSError as e:
-    if e.errno != errno.EEXIST:
-        raise
+    pass
+#    if e.errno != errno.EEXIST:
+#        raise
 
 #  different spreading models:
 
