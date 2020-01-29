@@ -127,9 +127,7 @@ def analyze_cost_vs_performance(query_cost_id):
 
     if save_computations:
         seeding_model_folder = "/edge_query/" + network_id + "/"
-        data_dump_folder = ('../sociotechnical_proj/' 
-                            + 'seeding_queries/' 
-                            + 'data/' 
+        data_dump_folder = ('./data/' 
                             + 'fb100-data/' 
                             + 'pickled_samples/' 
                             + 'spreading_pickled_samples/' 
