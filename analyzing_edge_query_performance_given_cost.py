@@ -27,9 +27,9 @@ seed_sample_size = 50
 
 sample_size = 500
 
-num_seed_sample_cpus = 3
+num_seed_sample_cpus = 4
 
-num_sample_cpus = 8
+num_sample_cpus = 7
 
 CAP = 0.9
 
@@ -74,11 +74,11 @@ def analyze_cost_vs_performance(query_cost_id):
     T = Ts[query_cost_id]
     Tmax = 390
 
-    sampled_nodes = pickle.load(open(root_data_address
-                                    + 'sampled_nodes/'
+    sampled_nodes = pickle.load(open('../sociotechnical_proj/' + 'seeding_queries/'+ 'data/'
+                                    + 'fb100-data/' + 'sampled_nodes/'
                                     + 'fb100_edge_query_sampled_nodes_Penn94.pkl', 'rb'))
-    candidate_nodes = pickle.load(open(root_data_address
-                                    + 'sampled_nodes/'
+    candidate_nodes = pickle.load(open('../sociotechnical_proj/' + 'seeding_queries/'+ 'data/'
+                                    + 'fb100-data/' + 'sampled_nodes/'
                                     + 'fb100_edge_query_candidate_nodes_Penn94.pkl', 'rb'))  
 
     sparsified_graph_id = 100000
@@ -127,9 +127,7 @@ def analyze_cost_vs_performance(query_cost_id):
 
     if save_computations:
         seeding_model_folder = "/edge_query/" + network_id + "/"
-        data_dump_folder = ('../sociotechnical_proj/' 
-                            + 'seeding_queries/' 
-                            + 'data/' 
+        data_dump_folder = ('./data/' 
                             + 'fb100-data/' 
                             + 'pickled_samples/' 
                             + 'spreading_pickled_samples/' 
