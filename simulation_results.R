@@ -9,7 +9,9 @@ library(RColorBrewer)
 
 setwd("/home/amin/Dropbox (MIT)/Contagion/Seeding/seeding_queries/")
 
-ed = readr::read_csv("data/edge_query.csv")
+nrho = "nrho_10"
+#nrho = "nrho_100"
+ed = readr::read_csv(sprintf("data/edge_query_%s.csv", nrho))
 names(ed) = tolower(names(ed))
 names(ed) = gsub(" ", "_", names(ed))
 names(ed) = gsub("_without_leaves", "_wol", names(ed))
@@ -41,7 +43,7 @@ ed = ed %>%
 #total <- merge(ed,ed_t0,all=TRUE)
 
 
-eds = ed %>% filter(t<=60) %>%
+eds = ed %>% filter(t<37) %>%
   group_by(k, t, seed_set_id) %>%
   summarise(
     n = n(),
@@ -105,7 +107,7 @@ ggplot(
   scale_x_discrete(name = "T")  +
   theme(legend.position = c(0.9, 0.4))
 
-ggsave("figures/edge_queries_spread_size_boxplot_t.pdf", width = 4.5, height = 3.5)
+ggsave(sprintf("figures/edge_queries_spread_size_boxplot_t_%s.pdf", nrho), width = 4.5, height = 3.5)
 
 
 # mapping between costs
@@ -159,7 +161,8 @@ ggplot(
   ) +
   theme(legend.position = c(0.9, 0.25))
 
-ggsave("figures/edge_queries_spread_size_by_t_with_nodes_queried.pdf", width = 4.5, height = 3.5)
+# ggsave("figures/edge_queries_spread_size_by_t_with_nodes_queried_nrho_100.pdf", width = 4.5, height = 3.5)
+ggsave(sprintf("figures/edge_queries_spread_size_by_t_with_nodes_queried_%s.pdf", nrho), width = 4.5, height = 3.5)
 
 ggplot(
   aes(
@@ -188,7 +191,8 @@ ggplot(
   ) +
   theme(legend.position = c(0.9, 0.25))
 
-ggsave("figures/edge_queries_spread_size_by_edges_and_nodes_queried.pdf", width = 4.5, height = 3.5)
+# ggsave("figures/edge_queries_spread_size_by_edges_and_nodes_queried_nrho_100.pdf", width = 4.5, height = 3.5)
+ggsave(sprintf("figures/edge_queries_spread_size_by_edges_and_nodes_queried_%s.pdf", nrho), width = 4.5, height = 3.5)
 
 ##################spread queries
 
