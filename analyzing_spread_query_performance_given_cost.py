@@ -146,7 +146,7 @@ def analyze_cost_vs_performance(query_cost_id):
         pickle.dump(cost_results, open(data_dump_folder
                                        + 'cost_samples_'
                                        + network_group + network_id
-                                       + '_T_' + str(T)
+                                       + '_query_cost_' + str(query_cost)
                                        + model_id + '.pkl', 'wb'))
 
 if __name__ == '__main__':
