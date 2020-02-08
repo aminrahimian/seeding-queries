@@ -6,8 +6,8 @@ import numpy as np
 
 root = './data/fb100-data/pickled_samples/spreading_pickled_samples/'
 costs = [0, 1, 2, 3, 4, 5, 7, 8, 10, 13, 16, 20, 24, 30, 37, 46, 57]
-spread_costs_k_2_and_4 = [0, 4, 8, 12, 16, 20, 24, 32, 44, 60, 80, 104, 132, 164, 200]
-spread_costs_k_10 = [0, 10, 20, 30, 40, 50, 60, 80, 100, 120, 140, 160, 180, 200]
+spread_costs_k_2_and_4 = [0, 4, 8, 12, 16, 20, 24, 32, 44, 60, 80, 104, 132, 164]
+spread_costs_k_10 = [0, 10, 20, 30, 40, 50, 60, 80, 100, 120, 140, 160, 180]
 
 def get_edge_query_data():
     filename = root + 'edge_query_rho_100' + '.csv'

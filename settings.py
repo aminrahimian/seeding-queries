@@ -39,39 +39,46 @@ network_group = 'fb100_edgelist_'
 # 'chami_advice_edgelist_'
 # 'chami_friendship_edgelist_'
 
+USE_SHARED_FOLDER = False
+
+if USE_SHARED_FOLDER:
+    root_address = '../sociotechnical_proj/' + 'seeding_queries/'
+else:
+    root_address = './'
+
 if network_group == 'cai_edgelist_':
 
-    root_data_address = '../sociotechnical_proj/' + 'seeding_queries/'+ 'data/cai-data/'
+    root_data_address = root_address + 'data/cai-data/'
 
     DELIMITER = ' '
 
 elif network_group == 'chami_friendship_edgelist_':
 
-    root_data_address =  '../sociotechnical_proj/' + 'seeding_queries/'+ 'data/chami-friendship-data/'
+    root_data_address = root_address + 'data/chami-friendship-data/'
 
     DELIMITER = ','
 
 elif network_group == 'chami_advice_edgelist_':
 
-    root_data_address = '../sociotechnical_proj/' + 'seeding_queries/'+ 'data/chami-advice-data/'
+    root_data_address = root_address + 'data/chami-advice-data/'
 
     DELIMITER = ','
 
 elif network_group == 'chami_union_edgelist_':
 
-    root_data_address = '../sociotechnical_proj/' + 'seeding_queries/'+ 'data/chami-union-data/'
+    root_data_address = root_address + 'data/chami-union-data/'
 
     DELIMITER = ','
 
 elif network_group == 'banerjee_combined_edgelist_':
 
-    root_data_address = '../sociotechnical_proj/' + 'seeding_queries/'+ 'data/banerjee-combined-data/'
+    root_data_address = root_address + 'data/banerjee-combined-data/'
 
     DELIMITER = ' '
 
 elif network_group == 'fb100_edgelist_':
 
-    root_data_address = '../sociotechnical_proj/' + 'seeding_queries/'+ 'data/fb100-data/'
+    root_data_address = root_address + 'data/fb100-data/'
 
     DELIMITER = ' '
 
