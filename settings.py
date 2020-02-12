@@ -204,37 +204,33 @@ except NameError:
 
     print('could not check for availability of samples or take smaller ones')
 
-# check for SLURM Job Array environmental variable:
-
-# if 'SLURM_ARRAY_TASK_ID' in os.environ:
-#     print('SLURM_ARRAY_TASK_ID: ' + str(os.environ['SLURM_ARRAY_TASK_ID']))
-#     JOB_NET_ID = int(os.environ['SLURM_ARRAY_TASK_ID']) - 1
-#     NET_ID = network_id_list[JOB_NET_ID]
-#     network_id_list = [NET_ID]
-#     print('SLURM_ARRAY_TASK_ID: ' + NET_ID)
-
-query_cost_id_list = []
-
-if 'SLURM_ARRAY_TASK_ID' in os.environ:
-    print('SLURM_ARRAY_TASK_ID: ' + str(os.environ['SLURM_ARRAY_TASK_ID']))
-    QUERY_COST_ID = int(os.environ['SLURM_ARRAY_TASK_ID']) - 1
-    query_cost_id_list = [QUERY_COST_ID]
-    print('QUERY_COST_ID_LIST:', query_cost_id_list)
-
-# batch_id_list = [11]
-
-# if 'SLURM_ARRAY_TASK_ID' in os.environ:
-#     print('SLURM_ARRAY_TASK_ID: ' + str(os.environ['SLURM_ARRAY_TASK_ID']))
-#     BATCH_ID = int(os.environ['SLURM_ARRAY_TASK_ID']) - 1
-#     batch_id_list = [BATCH_ID]
-#     print('BATCH_ID_LIST:', BATCH_ID)
-
 # commonly used settings:
 #
 # for computations:
 do_computations = True
 do_multiprocessing = False
 save_computations = True
+dump_sparsified_graph = False # Set true if using script to generate sparsified graphs
+
+# check for SLURM Job Array environmental variable, depending on the script in use:
+
+if dump_sparsified_graph:
+    query_cost_id_list = []
+
+    if 'SLURM_ARRAY_TASK_ID' in os.environ:
+        print('SLURM_ARRAY_TASK_ID: ' + str(os.environ['SLURM_ARRAY_TASK_ID']))
+        QUERY_COST_ID = int(os.environ['SLURM_ARRAY_TASK_ID']) - 1
+        query_cost_id_list = [QUERY_COST_ID]
+        print('QUERY_COST_ID_LIST:', query_cost_id_list)
+else:
+    batch_id_list = [0]
+
+    if 'SLURM_ARRAY_TASK_ID' in os.environ:
+        print('SLURM_ARRAY_TASK_ID: ' + str(os.environ['SLURM_ARRAY_TASK_ID']))
+        BATCH_ID = int(os.environ['SLURM_ARRAY_TASK_ID']) - 1
+        batch_id_list = [BATCH_ID]
+        print('BATCH_ID_LIST:', BATCH_ID)
+
 
 #  check that different modes are set consistently
 
